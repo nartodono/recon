@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -69,8 +68,7 @@ func RunShell() {
 		),
 	)
 
-	home, _ := os.UserHomeDir()
-
+	
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "recon > ",
 		AutoComplete:    completer,
