@@ -349,8 +349,72 @@ func runPort(args []string) bool {
 		extraArgs = []string{"-sC", "-sV"}
 	case "aggr":
 		extraArgs = []string{"-A"}
+	case "ftp":
+		extraArgs = []string{"-p", "21", "-sV", "--script=ftp-anon,ftp-syst,ftp-bounce"}
+	case "ftp-deep":
+		extraArgs = []string{"-p", "21", "-sV", "--script=(ftp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "ssh":
+		extraArgs = []string{"-p", "22", "-sV", "--script=ssh-hostkey,ssh2-enum-algos,ssh-auth-methods,banner"}
+	case "ssh-deep":
+		extraArgs = []string{"-p", "22", "-sV", "--script=(ssh-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "smtp":
+		extraArgs = []string{"-p", "25,587", "-sV", "--script=smtp-commands,smtp-enum-users"}
+	case "smtp-deep":
+		extraArgs = []string{"-p", "25,587", "-sV", "--script=(smtp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "dns":
+		extraArgs = []string{"-p", "53", "-sV", "--script=dns-nsid,dns-recursion"}
+	case "dns-deep":
+		extraArgs = []string{"-p", "53", "-sV", "--script=(dns-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "web":
+		extraArgs = []string{"-p", "80,443", "-sV", "--script=http-title,http-headers,http-methods,http-enum,http-server-header"}
+	case "web-deep":
+		extraArgs = []string{"-p", "80,443", "-sV", "--script=(http-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "kerberos":
+		extraArgs = []string{"-p", "88", "-sV", "--script=krb5-enum-users"}
+	case "kerberos-deep":
+		extraArgs = []string{"-p", "88", "-sV", "--script=(krb5-* and not (brute or dos or exploit))"}
+	case "snmp":
+		extraArgs = []string{"-sU", "-p", "161", "-sV", "--script=snmp-info,snmp-sysdescr,snmp-interfaces"}
+	case "snmp-deep":
+		extraArgs = []string{"-sU", "-p", "161", "-sV", "--script=(snmp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "ldap":
+		extraArgs = []string{"-p", "389", "-sV", "--script=ldap-rootdse,ldap-search"}
+	case "ldap-deep":
+		extraArgs = []string{"-p", "389", "-sV", "--script=(ldap-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "smb":
+		extraArgs = []string{"-p", "445", "-sV", "--script=smb-os-discovery,smb2-security-mode,smb2-time,smb-protocols"}
+	case "smb-deep":
+		extraArgs = []string{"-p", "445", "-sV", "--script=(smb-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "mssql":
+		extraArgs = []string{"-p", "1433", "-sV", "--script=ms-sql-info,ms-sql-ntlm-info"}
+	case "mssql-deep":
+		extraArgs = []string{"-p", "1433", "-sV", "--script=(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+ 	case "mysql":
+		extraArgs = []string{"-p", "3306", "-sV", "--script=mysql-info,mysql-capabilities"}
+	case "mysql-deep":
+		extraArgs = []string{"-p", "3306", "-sV", "--script=(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "rdp":
+		extraArgs = []string{"-p", "3389", "-sV", "--script=rdp-ntlm-info,rdp-enum-encryption"}
+	case "rdp-deep":
+		extraArgs = []string{"-p", "3389", "-sV", "--script=(rdp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "postgresql":
+		extraArgs = []string{"-p", "5432", "-sV", "--script=pgsql-info"}
+	case "postgresql-deep":
+		extraArgs = []string{"-p", "5432", "-sV", "--script=(pgsql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "vnc":
+		extraArgs = []string{"-p", "5900", "-sV", "--script=vnc-info"}
+	case "vnc-deep":
+		extraArgs = []string{"-p", "5900", "-sV", "--script=(vnc-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "winrm":
+		extraArgs = []string{"-p", "5985,5986", "-sV", "--script=wsman-info"}
+	case "winrm-deep":
+		extraArgs = []string{"-p", "5985,5986", "-sV", "--script=(wsman-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
+	case "vuln":
+		extraArgs = []string{"-sV", "--script=vuln and not (dos or intrusive or exploit)"}
+	case "vuln-deep":
+		extraArgs = []string{"-sV", "--script=(vuln or dos or intrusive or exploit)"}
 	default:
-		fmt.Println(Yellow("[!] Unknown port profile. Available: default, aggr\n"))
+		fmt.Println(Yellow("[!] Unknown port profile. Available: default, aggr, etc\n"))
 		return false
 	}
 
