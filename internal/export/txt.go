@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"recon/internal/modules/host"
-	"recon/internal/modules/port"
+	"github.com/nartodono/recon/internal/modules/host"
+	"github.com/nartodono/recon/internal/modules/port"
 )
 
 // ---------- HOST TXT ----------
