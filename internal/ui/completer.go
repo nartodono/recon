@@ -9,24 +9,24 @@ import (
 	"github.com/chzyer/readline"
 )
 
-type HybridCompleter struct {
-	Cmd *readline.PrefixCompleter
+type RLCompleter struct {
+	Commands *readline.PrefixCompleter
 }
 
-func (h *HybridCompleter) Do(line []rune, pos int) ([][]rune, int) {
+func (c *RLCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	s := string(line[:pos])
 
 	tokens, cur := splitForCompletion(s)
 
-	// only do file completion when the token right before cursor is "-f"
-	isFileContext := len(tokens) >= 1 && tokens[len(tokens)-1] == "-f"
-	if isFileContext {
-		// IMPORTANT: return suffixes to append, not full paths
+	// file completion hanya jika token sebelumnya adalah "-f"
+	if len(tokens) > 0 && tokens[len(tokens)-1] == "-f" {
+		// readline akan append suggestion ke token, jadi kita return "suffix" saja
 		return completePathSuffix(cur), 0
 	}
 
-	if h.Cmd != nil {
-		return h.Cmd.Do(line, pos)
+	// default: command completion
+	if c.Commands != nil {
+		return c.Commands.Do(line, pos)
 	}
 	return nil, 0
 }
@@ -36,6 +36,7 @@ func splitForCompletion(s string) ([]string, string) {
 
 	trimRight := strings.TrimRight(s, " ")
 	if trimRight != s {
+		// trailing space: current token kosong
 		fields := strings.Fields(trimRight)
 		return fields, ""
 	}
@@ -50,29 +51,28 @@ func splitForCompletion(s string) ([]string, string) {
 	return fields, cur
 }
 
-// completePathSuffix returns the *suffix* to append to current token (cur)
-// so tab completion behaves like a normal shell.
+// Return suffix to append to current token, not full candidate.
 func completePathSuffix(cur string) [][]rune {
 	home, _ := os.UserHomeDir()
+	sep := string(os.PathSeparator)
 
-	// Expand "~" only for filesystem operations
+	typedHasTilde := strings.HasPrefix(cur, "~")
+
+	// expand ~ for filesystem access
 	curFS := cur
-	if strings.HasPrefix(cur, "~") {
+	if typedHasTilde {
 		curFS = filepath.Join(home, strings.TrimPrefix(cur, "~"))
 	}
 
-	// Determine filesystem directory to list + base prefix to match
+	// determine dir to read + base to match
 	dirFS := "."
 	base := curFS
 
-	// Determine what user typed as directory prefix (keeps "~" if present)
+	// dirTyped preserves what user typed (keeps "~" if used)
 	dirTyped := ""
-
-	sep := string(os.PathSeparator)
 
 	if strings.Contains(curFS, sep) {
 		if strings.HasSuffix(curFS, sep) {
-			// user typed a dir and ended with '/', match everything inside it
 			dirFS = curFS
 			base = ""
 		} else {
@@ -80,8 +80,7 @@ func completePathSuffix(cur string) [][]rune {
 			base = filepath.Base(curFS)
 		}
 
-		// typed dir prefix should be based on original cur (not expanded),
-		// so suggestions keep "~" if user typed "~"
+		// compute typed directory prefix from original cur
 		if strings.HasSuffix(cur, sep) {
 			dirTyped = cur
 		} else {
@@ -91,7 +90,6 @@ func completePathSuffix(cur string) [][]rune {
 			}
 		}
 	} else {
-		// no slash, complete in current working directory
 		dirFS = "."
 		base = curFS
 		dirTyped = ""
@@ -104,7 +102,7 @@ func completePathSuffix(cur string) [][]rune {
 
 	baseLower := strings.ToLower(base)
 
-	// Build full suggestion strings (typed-style), then convert to suffixes
+	// build full typed-style suggestions then convert to suffix
 	full := make([]string, 0, 32)
 	for _, e := range entries {
 		name := e.Name()
@@ -119,14 +117,13 @@ func completePathSuffix(cur string) [][]rune {
 
 	sort.Strings(full)
 
-	// Convert full suggestions to suffixes to append
 	out := make([][]rune, 0, len(full))
 	for _, f := range full {
-		// append only the part beyond what user already typed (cur)
+		// key behavior: only append what user hasn't typed yet
 		if strings.HasPrefix(f, cur) {
 			out = append(out, []rune(strings.TrimPrefix(f, cur)))
 		} else {
-			// fallback: if somehow doesn't match, just append the whole thing
+			// fallback (should be rare)
 			out = append(out, []rune(f))
 		}
 	}
