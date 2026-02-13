@@ -347,8 +347,10 @@ func runPort(args []string) bool {
 	switch profile {
 	case "default":
 		extraArgs = []string{"-sC", "-sV"}
-	case "aggr":
-		extraArgs = []string{"-A"}
+	case "common":
+		extraArgs = []string("-sV", "--top-ports", "1000", "--version-light"}
+	case "deep":
+		extraArgs = []string{"-sC", "-sV", "-O", "--traceroute", "--script", "(default or safe or discovery) and not (dos or intrusive or exploit)"}
 	case "ftp":
 		extraArgs = []string{"-p", "21", "-sV", "--script=ftp-anon,ftp-syst,ftp-bounce"}
 	case "ftp-deep":
