@@ -107,10 +107,13 @@ func renderPortFindingsTXT(findings []port.PortFinding) string {
 		}
 
 		sb.WriteString(fmt.Sprintf("[%s] Port %d ---------------------------\n", prefix, f.Port))
-		sb.WriteString(fmt.Sprintf("    %s - %s\n", f.Proto, f.Service))
-		sb.WriteString(fmt.Sprintf("    Status : %s\n", f.State))
+		sb.WriteString(fmt.Sprintf("    Protocol: %s\n", f.Proto))
+		sb.WriteString(fmt.Sprintf("    Service : %s\n", f.Service))
+		sb.WriteString(fmt.Sprintf("    Status  : %s\n", f.State))
 		if strings.TrimSpace(f.Version) != "" {
-			sb.WriteString(fmt.Sprintf("    Version: %s\n", f.Version))
+		    sb.WriteString(fmt.Sprintf("    Version : %s\n", f.Version))
+		} else {
+		    sb.WriteString("    Version : UNKNOWN\n")
 		}
 
 		if len(f.Scripts) > 0 {
