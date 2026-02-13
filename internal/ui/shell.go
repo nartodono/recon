@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
+
 	"github.com/chzyer/readline"
 )
 
 func RunShell() {
 	PrintBanner()
 
-	// Autocomplete command utama
-	completer := readline.NewPrefixCompleter(
+	// Command completer (basic)
+	cmdCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("help"),
 		readline.PcItem("?"),
 		readline.PcItem("clear"),
@@ -30,10 +32,13 @@ func RunShell() {
 		),
 	)
 
+	home, _ := os.UserHomeDir()
+	historyPath := filepath.Join(home, ".recon_history")
+
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          Cyan("recon") + " > ",
-		HistoryFile:     os.TempDir() + "/recon_history.tmp",
-		AutoComplete:    completer,
+		HistoryFile:     historyPath,
+		AutoComplete:    &HybridCompleter{Cmd: cmdCompleter},
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})
@@ -46,11 +51,10 @@ func RunShell() {
 	for {
 		line, err := rl.Readline()
 		if err == readline.ErrInterrupt {
-			if len(line) == 0 {
-				continue
-			}
+			// Ctrl+C: cancel current line, return to prompt
 			continue
 		} else if err == io.EOF {
+			// Ctrl+D
 			break
 		}
 
