@@ -47,7 +47,7 @@ func runCmd(timeout time.Duration, name string, args ...string) (string, error) 
 	return buf.String(), err
 }
 
-func Scan(target string, extraArgs []string) (Result, error) {
+func Scan(target string, extraArgs []string, timeout time.Duration) (Result, error) {
 	if _, err := exec.LookPath("nmap"); err != nil {
 		return Result{}, fmt.Errorf("nmap not found. Install: sudo apt install nmap")
 	}
@@ -60,7 +60,7 @@ func Scan(target string, extraArgs []string) (Result, error) {
 	baseArgs = append(baseArgs, extraArgs...)
 	baseArgs = append(baseArgs, target)
 
-	out, err := runCmd(8*time.Minute, "nmap", baseArgs...)
+	out, err := runCmd(timeout, "nmap", baseArgs...)
 
 	if err != nil && !strings.Contains(strings.ToLower(out), "<nmaprun") {
 
