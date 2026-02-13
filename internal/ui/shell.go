@@ -13,8 +13,7 @@ import (
 func RunShell() {
 	PrintBanner()
 
-	// command completer
-	cmdCompleter := readline.NewPrefixCompleter(
+	completer := readline.NewPrefixCompleter(
 		readline.PcItem("help"),
 		readline.PcItem("?"),
 		readline.PcItem("clear"),
@@ -24,21 +23,23 @@ func RunShell() {
 		readline.PcItem("q"),
 		readline.PcItem("host",
 			readline.PcItem("-f"),
+			readline.PcItem("--json"),
+			readline.PcItem("--txt"),
 		),
 		readline.PcItem("port",
 			readline.PcItem("default"),
 			readline.PcItem("aggr"),
 			readline.PcItem("-f"),
+			readline.PcItem("--json"),
+			readline.PcItem("--txt"),
 		),
 	)
 
 	home, _ := os.UserHomeDir()
-	historyPath := filepath.Join(home, ".recon_history") // kalau kamu bener2 gak mau persist, boleh hapus field ini
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          "recon > ", // sengaja plain biar gak glitch
-		HistoryFile:     historyPath,
-		AutoComplete:    &RLCompleter{Commands: cmdCompleter},
+		Prompt:          "recon > ",
+		AutoComplete:    completer,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
 	})
@@ -51,10 +52,8 @@ func RunShell() {
 	for {
 		line, err := rl.Readline()
 		if err == readline.ErrInterrupt {
-			// Ctrl+C cancels line, back to prompt
 			continue
 		} else if err == io.EOF {
-			// Ctrl+D exits
 			break
 		}
 
