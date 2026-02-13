@@ -18,7 +18,7 @@ func main() {
 	cmd := os.Args[1]
 
 		if cmd == "-h" || cmd == "--help" || cmd == "help" {
-			ui.PrintBannerHelp()
+			ui.PrintHelp()
 			return
 		}
 	
