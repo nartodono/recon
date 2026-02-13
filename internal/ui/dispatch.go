@@ -89,7 +89,7 @@ func runHost(args []string) bool {
 			RenderHostResult(res)
 			all = append(all, res)
 
-			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+			fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
 			CountHostStatus(res, &counts)
 		}
 
@@ -169,7 +169,7 @@ func runHost(args []string) bool {
 	}
 
 	RenderHostResult(res)
-	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+	fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
 
 	if wantJSON || wantTXT {
 		dir, derr := export.DefaultDir()
@@ -219,136 +219,13 @@ func runHost(args []string) bool {
 
 // ---------------------------
 // PORT
-func runPort(args []string) bool {
-	args, wantJSON, wantTXT := parseExportFlags(args)
-
-	if len(args) == 0 {
-		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>\n"))
-		return false
-	}
-
-	if args[0] == "-f" {
-		if len(args) != 2 {
-			fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
-			return false
-		}
-
-		targets, err := input.LoadTargetsFromFile(args[1])
-		if err != nil {
-			PrintError(err)
-			return false
-		}
-		if len(targets) == 0 {
-			fmt.Println(Yellow("[!] No targets found in file.\n"))
-			return false
-		}
-
-		totalStart := time.Now()
-
-		type PortFileItem struct {
-			Target         string            `json:"target"`
-			Findings       []port.PortFinding `json:"findings"`
-			ElapsedSeconds float64           `json:"elapsed_seconds"`
-		}
-		items := []PortFileItem{}
-
-		for i, t := range targets {
-			start := time.Now()
-			sp := NewSpinner()
-			sp.Start(fmt.Sprintf("[*] Port scan (%d/%d) %s ...", i+1, len(targets), t))
-
-			res, err := port.Scan(t, []string{"-sC", "-sV"})
-
-			sp.Stop()
-			elapsed := time.Since(start)
-
-			if err != nil {
-				PrintError(err)
-				continue
-			}
-
-			fmt.Println(Cyan("========================================"))
-			fmt.Printf(Cyan("Target: %s\n\n"), t)
-
-			RenderPortResult(res)
-			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
-
-			items = append(items, PortFileItem{
-				Target:         t,
-				Findings:       res.Findings,
-				ElapsedSeconds: elapsed.Seconds(),
-			})
-		}
-
-		fmt.Printf(Green("All scans completed in %.2fs\n\n"), time.Since(totalStart).Seconds())
-
-		if wantJSON || wantTXT {
-			dir, derr := export.DefaultDir()
-			if derr != nil {
-				PrintError(derr)
-				return false
-			}
-			if derr := export.EnsureDir(dir); derr != nil {
-				PrintError(derr)
-				return false
-			}
-
-			now := time.Now()
-			totalElapsed := time.Since(totalStart).Seconds()
-
-			jsonPayload := map[string]any{
-				"module":          "port",
-				"timestamp":       now.Format(time.RFC3339),
-				"mode":            "file",
-				"profile":         "default",
-				"results":         items,
-				"elapsed_seconds": totalElapsed,
-			}
-
-			if wantJSON {
-				p := filepath.Join(dir, export.Filename("port", "json", now))
-				if e := export.WriteJSON(p, jsonPayload); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			if wantTXT {
-				p := filepath.Join(dir, export.Filename("port", "txt", now))
-				txt := portFileTXT(items, "default", totalElapsed, now)
-				if e := export.WriteFile(p, []byte(txt)); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			fmt.Println()
-		}
-
-		return false
-	}
-
-	profile := "default"
-	target := ""
-
-	if len(args) == 1 {
-		target = args[0]
-	} else if len(args) == 2 {
-		profile = args[0]
-		target = args[1]
-	} else {
-		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>\n"))
-		return false
-	}
-
+func getPortExtraArgs(profile string) ([]string, bool) {
 	var extraArgs []string
 	switch profile {
 	case "default":
 		extraArgs = []string{"-sC", "-sV"}
 	case "common":
-		extraArgs = []string("-sV", "--top-ports", "1000", "--version-light"}
+		extraArgs = []string{"-sV", "--top-ports", "1000", "--version-light"}
 	case "deep":
 		extraArgs = []string{"-sC", "-sV", "-O", "--traceroute", "--script", "(default or safe or discovery) and not (dos or intrusive or exploit)"}
 	case "ftp":
@@ -391,7 +268,7 @@ func runPort(args []string) bool {
 		extraArgs = []string{"-p", "1433", "-sV", "--script=ms-sql-info,ms-sql-ntlm-info"}
 	case "mssql-deep":
 		extraArgs = []string{"-p", "1433", "-sV", "--script=(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
- 	case "mysql":
+	case "mysql":
 		extraArgs = []string{"-p", "3306", "-sV", "--script=mysql-info,mysql-capabilities"}
 	case "mysql-deep":
 		extraArgs = []string{"-p", "3306", "-sV", "--script=(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
@@ -416,21 +293,204 @@ func runPort(args []string) bool {
 	case "vuln-deep":
 		extraArgs = []string{"-sV", "--script=(vuln or dos or intrusive or exploit)"}
 	default:
-		fmt.Println(Yellow("[!] Unknown port profile. Available: default, aggr, etc\n"))
+		return nil, false
+	}
+	return extraArgs, true
+}
+
+func runPort(args []string) bool {
+	args, wantJSON, wantTXT := parseExportFlags(args)
+
+	if len(args) == 0 {
+		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>  OR  port <profile> -f <file.txt>\n"))
+		return false
+	}
+
+	// ---------------------------
+	// File mode:
+	//   port -f targets.txt
+	//   port <profile> -f targets.txt
+	if args[0] == "-f" || (len(args) >= 3 && args[1] == "-f") {
+		profile := "default"
+		file := ""
+
+		if args[0] == "-f" {
+			if len(args) != 2 {
+				fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
+				return false
+			}
+			file = args[1]
+		} else {
+			// <profile> -f <file>
+			if len(args) != 3 {
+				fmt.Println(Yellow("[!] Usage: port <profile> -f <file.txt>\n"))
+				return false
+			}
+			profile = args[0]
+			file = args[2]
+		}
+
+		extraArgs, ok := getPortExtraArgs(profile)
+		if !ok {
+			fmt.Println(Yellow("[!] Unknown port profile. Try: default, common, deep, smb, smb-deep, web, web-deep, vuln, vuln-deep, ...\n"))
+			return false
+		}
+
+		targets, err := input.LoadTargetsFromFile(file)
+		if err != nil {
+			PrintError(err)
+			return false
+		}
+		if len(targets) == 0 {
+			fmt.Println(Yellow("[!] No targets found in file.\n"))
+			return false
+		}
+
+		isDeep := strings.Contains(profile, "deep")
+		maxTargets := 30
+		if isDeep {
+			maxTargets = 10
+		}
+		if len(targets) > maxTargets {
+			if isDeep {
+				fmt.Printf(Yellow("[!] Deep profile in file mode. Limiting targets to first %d (from %d).\n"), maxTargets, len(targets))
+			} else {
+				fmt.Printf(Yellow("[!] File mode limit: scanning first %d targets (from %d).\n"), maxTargets, len(targets))
+			}
+			targets = targets[:maxTargets]
+		}
+
+		timeout := 8 * time.Minute
+		if isDeep {
+			timeout = 25 * time.Minute
+			fmt.Println(Yellow("[!] Deep profile selected. This may take a long time per target..."))
+		}
+
+		totalStart := time.Now()
+
+		type PortFileItem struct {
+			Target         string             `json:"target"`
+			Findings       []port.PortFinding `json:"findings"`
+			ElapsedSeconds float64            `json:"elapsed_seconds"`
+		}
+		items := []PortFileItem{}
+
+		for i, t := range targets {
+			start := time.Now()
+			sp := NewSpinner()
+			sp.Start(fmt.Sprintf("[*] Port scan (%s) (%d/%d) %s ...", profile, i+1, len(targets), t))
+
+			res, err := port.Scan(t, extraArgs, timeout)
+
+			sp.Stop()
+			elapsed := time.Since(start)
+
+			if err != nil {
+				PrintError(err)
+				continue
+			}
+
+			fmt.Println(Cyan("========================================"))
+			fmt.Printf(Cyan("Target: %s\n\n"), t)
+
+			RenderPortResult(res)
+			fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
+
+			items = append(items, PortFileItem{
+				Target:         t,
+				Findings:       res.Findings,
+				ElapsedSeconds: elapsed.Seconds(),
+			})
+		}
+
+		fmt.Printf(Green("All scans completed in %.2fs\n\n"), time.Since(totalStart).Seconds())
+
+		if wantJSON || wantTXT {
+			dir, derr := export.DefaultDir()
+			if derr != nil {
+				PrintError(derr)
+				return false
+			}
+			if derr := export.EnsureDir(dir); derr != nil {
+				PrintError(derr)
+				return false
+			}
+
+			now := time.Now()
+			totalElapsed := time.Since(totalStart).Seconds()
+
+			jsonPayload := map[string]any{
+				"module":          "port",
+				"timestamp":       now.Format(time.RFC3339),
+				"mode":            "file",
+				"profile":         profile,
+				"results":         items,
+				"elapsed_seconds": totalElapsed,
+				"limit": map[string]any{
+					"max_targets": maxTargets,
+					"deep":        isDeep,
+				},
+			}
+
+			if wantJSON {
+				p := filepath.Join(dir, export.Filename("port", "json", now))
+				if e := export.WriteJSON(p, jsonPayload); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			if wantTXT {
+				p := filepath.Join(dir, export.Filename("port", "txt", now))
+				txt := portFileTXT(items, profile, totalElapsed, now)
+				if e := export.WriteFile(p, []byte(txt)); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			fmt.Println()
+		}
+
+		return false
+	}
+
+	// ---------------------------
+	// Single mode:
+	//   port <ip>
+	//   port <profile> <ip>
+	profile := "default"
+	target := ""
+
+	if len(args) == 1 {
+		target = args[0]
+	} else if len(args) == 2 {
+		profile = args[0]
+		target = args[1]
+	} else {
+		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>  OR  port <profile> -f <file.txt>\n"))
+		return false
+	}
+
+	extraArgs, ok := getPortExtraArgs(profile)
+	if !ok {
+		fmt.Println(Yellow("[!] Unknown port profile. Try: default, common, deep, smb, smb-deep, web, web-deep, vuln, vuln-deep, ...\n"))
 		return false
 	}
 
 	timeout := 8 * time.Minute
-
 	if strings.Contains(profile, "deep") {
 		timeout = 25 * time.Minute
+		fmt.Println(Yellow("[!] Deep profile selected. This may take a long time..."))
 	}
 
 	start := time.Now()
 	sp := NewSpinner()
 	sp.Start(fmt.Sprintf("[*] Port scan (%s) %s ...", profile, target))
 
-	res, err := port.Scan(target, extraArgs)
+	res, err := port.Scan(target, extraArgs, timeout)
 
 	sp.Stop()
 	elapsed := time.Since(start)
@@ -441,7 +501,7 @@ func runPort(args []string) bool {
 	}
 
 	RenderPortResult(res)
-	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+	fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
 
 	if wantJSON || wantTXT {
 		dir, derr := export.DefaultDir()
