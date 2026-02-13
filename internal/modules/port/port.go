@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"recon/internal/system"
+	"github.com/nartodono/recon/internal/system"
 )
 
 type PortFinding struct {
