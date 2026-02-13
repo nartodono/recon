@@ -15,11 +15,17 @@ func main() {
 	}
 
 	if len(os.Args) > 1 {
-		cmd := os.Args[1]
+	cmd := os.Args[1]
+
+		if cmd == "-h" || cmd == "--help" || cmd == "help" {
+			ui.PrintBannerHelp()
+			return
+		}
+	
 		args := os.Args[2:]
 		ui.RunCommand(cmd, args)
 		return
 	}
 
-	ui.RunShell()
+ui.RunShell()
 }
