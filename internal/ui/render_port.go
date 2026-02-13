@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
-	"github.com/nartodono/recon/internal/modules/port"
+	"recon/internal/modules/port"
 )
 
 func RenderPortResult(r port.Result) {
@@ -23,11 +23,12 @@ func RenderPortResult(r port.Result) {
 		}
 
 		fmt.Printf("%s Port %d ---------------------------\n", prefix, f.Port)
-		fmt.Printf("    %s - %s\n", f.Proto, f.Service)
-		fmt.Printf("    Status : %s\n", f.State)
+		fmt.Printf("    Protocol:%s\n", f.Proto)
+		fmt.Printf("    Service : %s\n", f.Service)
+		fmt.Printf("    Status  : %s\n", f.State)
 
 		if strings.TrimSpace(f.Version) != "" {
-			fmt.Printf("    Version: %s\n", f.Version)
+			fmt.Printf("    Version : %s\n", f.Version)
 		}
 
 		if len(f.Scripts) > 0 {
