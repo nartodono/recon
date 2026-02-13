@@ -12,7 +12,7 @@ func DefaultDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get home dir: %w", err)
 	}
-	return filepath.Join(home, "recon"), nil
+	return filepath.Join(home, "recon_result"), nil
 }
 
 func EnsureDir(dir string) error {
