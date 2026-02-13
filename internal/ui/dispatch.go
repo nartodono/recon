@@ -16,7 +16,7 @@ func RunCommand(cmd string, args []string) bool {
 	switch cmd {
 
 	case "help", "?":
-		PrintBanner()
+		PrintBannerHelp()
 		return false
 
 	case "clear", "cls":
