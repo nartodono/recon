@@ -3,9 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-
-	"recon/internal/system"
-	"recon/internal/ui"
+	"github.com/nartodono/recon/internal/system"
+	"github.com/nartodono/recon/internal/ui"
 )
 
 func main() {
