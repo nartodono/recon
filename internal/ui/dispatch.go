@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"recon/internal/export"
-	"recon/internal/input"
-	"recon/internal/modules/host"
-	"recon/internal/modules/port"
+	"github.com/nartodono/recon/internal/export"
+	"github.com/nartodono/recon/internal/input"
+	"github.com/nartodono/recon/internal/modules/host"
+	"github.com/nartodono/recon/internal/modules/port"
 )
 
 func RunCommand(cmd string, args []string) bool {
