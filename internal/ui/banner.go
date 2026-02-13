@@ -128,7 +128,7 @@ and internal Nmap mappings, please visit:
 `)
 }
 
-func printHelp() {
+func PrintHelp() {
 	fmt.Println(ColorCyan + `
 ██████╗ ███████╗ ██████╗ ██████╗ ███╗   ██╗
 ██╔══██╗██╔════╝██╔════╝██╔═══██╗████╗  ██║
