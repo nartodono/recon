@@ -257,7 +257,7 @@ func runPort(args []string) bool {
 			sp := NewSpinner()
 			sp.Start(fmt.Sprintf("[*] Port scan (%d/%d) %s ...", i+1, len(targets), t))
 
-			res, err := port.Scan(t, []string{"-sC", "-sV"}) // default profile for file mode
+			res, err := port.Scan(t, []string{"-sC", "-sV"})
 
 			sp.Stop()
 			elapsed := time.Since(start)
@@ -418,6 +418,12 @@ func runPort(args []string) bool {
 	default:
 		fmt.Println(Yellow("[!] Unknown port profile. Available: default, aggr, etc\n"))
 		return false
+	}
+
+	timeout := 8 * time.Minute
+
+	if strings.Contains(profile, "deep") {
+		timeout = 25 * time.Minute
 	}
 
 	start := time.Now()
