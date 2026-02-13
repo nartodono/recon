@@ -48,7 +48,6 @@ func RunShell() {
 		executor,
 		completer,
 		prompt.OptionPrefix(Cyan("recon")+" > "),
-		prompt.OptionWordSeparator(" \t\n"),
 	)
 	p.Run()
 }
