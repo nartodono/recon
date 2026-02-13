@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"recon/internal/modules/host"
+	"github.com/nartodono/recon/internal/export/internal/modules/host"
 )
 
 func RenderHostResult(r host.Result) {
