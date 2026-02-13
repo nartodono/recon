@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-	"recon/internal/system"
+	"github.com/nartodono/recon/internal/system"
 )
 
 type PingSignal string
