@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
-	"recon/internal/modules/port"
+	"github.com/nartodono/recon/internal/export/internal/modules/port"
 )
 
 func RenderPortResult(r port.Result) {
