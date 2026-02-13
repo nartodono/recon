@@ -1,7 +1,5 @@
 package ui
 
-// parseExportFlags mengambil args dan menghapus flag export dari args.
-// return: cleanedArgs, wantJSON, wantTXT
 func parseExportFlags(args []string) ([]string, bool, bool) {
 	wantJSON := false
 	wantTXT := false
