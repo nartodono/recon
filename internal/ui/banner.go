@@ -88,6 +88,7 @@ PORT PROFILES
 ────────────────────────────────────────
 Standard and Deep variants are available:
 
+  Common / Deep
   ftp / ftp-deep
   ssh / ssh-deep
   smtp / smtp-deep
