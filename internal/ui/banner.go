@@ -135,10 +135,10 @@ func printHelp() {
 ██████╔╝█████╗  ██║     ██║   ██║██╔██╗ ██║
 ██╔══██╗██╔══╝  ██║     ██║   ██║██║╚██╗██║
 ██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║
-╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
+╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝ ╚═╝  ╚═══╝
 ` + ColorReset)
 
-	fmt.Println (`
+	fmt.Println(`
 General syntax:
 
   recon host <ip> [--txt] [--json]
@@ -149,6 +149,6 @@ General syntax:
 
 Use interactive shell mode:
   recon
-
-	`)
+`)
 }
+
