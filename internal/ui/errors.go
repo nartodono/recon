@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"recon/internal/system"
+	"github.com/nartodono/recon/internal/export/internal/system"
 )
 
 func PrintError(err error) {
