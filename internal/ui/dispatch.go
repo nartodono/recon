@@ -2,7 +2,11 @@ package ui
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
+
+	"recon/internal/export"
 	"recon/internal/input"
 	"recon/internal/modules/host"
 	"recon/internal/modules/port"
@@ -36,13 +40,16 @@ func RunCommand(cmd string, args []string) bool {
 	}
 }
 
+// ---------------------------
+// HOST
 func runHost(args []string) bool {
+	args, wantJSON, wantTXT := parseExportFlags(args)
+
 	if len(args) == 0 {
-		fmt.Println(Yellow("[!] Usage: host <ip>  OR  host -f <file.txt>\n"))
+		fmt.Println(Yellow("[!] Usage: host <ip/hostname>  OR  host -f <file.txt>\n"))
 		return false
 	}
 
-	// file mode
 	if args[0] == "-f" {
 		if len(args) != 2 {
 			fmt.Println(Yellow("[!] Usage: host -f <file.txt>\n"))
@@ -55,12 +62,14 @@ func runHost(args []string) bool {
 			return false
 		}
 		if len(targets) == 0 {
-			fmt.Println(Yellow("[!] No valid targets found in file.\n"))
+			fmt.Println(Yellow("[!] No targets found in file.\n"))
 			return false
 		}
 
 		counts := HostCounts{}
 		totalStart := time.Now()
+
+		all := []host.Result{}
 
 		for i, t := range targets {
 			start := time.Now()
@@ -78,16 +87,68 @@ func runHost(args []string) bool {
 			}
 
 			RenderHostResult(res)
+			all = append(all, res)
+
 			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 			CountHostStatus(res, &counts)
 		}
 
 		PrintHostSummary(counts)
 		fmt.Printf("Total Time: %.2fs\n\n", time.Since(totalStart).Seconds())
+
+		if wantJSON || wantTXT {
+			dir, derr := export.DefaultDir()
+			if derr != nil {
+				PrintError(derr)
+				return false
+			}
+			if derr := export.EnsureDir(dir); derr != nil {
+				PrintError(derr)
+				return false
+			}
+
+			now := time.Now()
+			totalElapsed := time.Since(totalStart).Seconds()
+
+			jsonPayload := map[string]any{
+				"module":    "host",
+				"timestamp": now.Format(time.RFC3339),
+				"mode":      "file",
+				"results":   all,
+				"summary": map[string]int{
+					"up":      counts.Up,
+					"down":    counts.Down,
+					"unknown": counts.Unknown,
+					"total":   counts.Total,
+				},
+				"elapsed_seconds": totalElapsed,
+			}
+
+			if wantJSON {
+				p := filepath.Join(dir, export.Filename("host", "json", now))
+				if e := export.WriteJSON(p, jsonPayload); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			if wantTXT {
+				p := filepath.Join(dir, export.Filename("host", "txt", now))
+				txt := export.HostFileTXT(all, counts.Up, counts.Down, counts.Unknown, counts.Total, totalElapsed, now)
+				if e := export.WriteFile(p, []byte(txt)); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			fmt.Println()
+		}
+
 		return false
 	}
 
-	// single mode
 	if len(args) != 1 {
 		fmt.Println(Yellow("[!] Usage: host <ip-or-hostname>\n"))
 		return false
@@ -109,16 +170,63 @@ func runHost(args []string) bool {
 
 	RenderHostResult(res)
 	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+
+	if wantJSON || wantTXT {
+		dir, derr := export.DefaultDir()
+		if derr != nil {
+			PrintError(derr)
+			return false
+		}
+		if derr := export.EnsureDir(dir); derr != nil {
+			PrintError(derr)
+			return false
+		}
+
+		now := time.Now()
+
+		jsonPayload := map[string]any{
+			"module":          "host",
+			"timestamp":       now.Format(time.RFC3339),
+			"target":          res.Target,
+			"result":          res,
+			"elapsed_seconds": elapsed.Seconds(),
+		}
+
+		if wantJSON {
+			p := filepath.Join(dir, export.Filename("host", "json", now))
+			if e := export.WriteJSON(p, jsonPayload); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		if wantTXT {
+			p := filepath.Join(dir, export.Filename("host", "txt", now))
+			txt := export.HostSingleTXT(res, elapsed.Seconds(), now)
+			if e := export.WriteFile(p, []byte(txt)); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		fmt.Println()
+	}
+
 	return false
 }
 
+// ---------------------------
+// PORT
 func runPort(args []string) bool {
+	args, wantJSON, wantTXT := parseExportFlags(args)
+
 	if len(args) == 0 {
-		fmt.Println(Yellow("[!] Usage: port <ip>  OR  port <profile> <ip>  OR  port -f <file.txt>\n"))
+		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>\n"))
 		return false
 	}
 
-	// file mode (default profile)
 	if args[0] == "-f" {
 		if len(args) != 2 {
 			fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
@@ -131,19 +239,25 @@ func runPort(args []string) bool {
 			return false
 		}
 		if len(targets) == 0 {
-			fmt.Println(Yellow("[!] No valid targets found in file.\n"))
+			fmt.Println(Yellow("[!] No targets found in file.\n"))
 			return false
 		}
 
 		totalStart := time.Now()
+
+		type PortFileItem struct {
+			Target         string            `json:"target"`
+			Findings       []port.PortFinding `json:"findings"`
+			ElapsedSeconds float64           `json:"elapsed_seconds"`
+		}
+		items := []PortFileItem{}
 
 		for i, t := range targets {
 			start := time.Now()
 			sp := NewSpinner()
 			sp.Start(fmt.Sprintf("[*] Port scan (%d/%d) %s ...", i+1, len(targets), t))
 
-			// default profile for now
-			res, err := port.Scan(t, []string{"-sC", "-sV"})
+			res, err := port.Scan(t, []string{"-sC", "-sV"}) // default profile for file mode
 
 			sp.Stop()
 			elapsed := time.Since(start)
@@ -158,23 +272,74 @@ func runPort(args []string) bool {
 
 			RenderPortResult(res)
 			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+
+			items = append(items, PortFileItem{
+				Target:         t,
+				Findings:       res.Findings,
+				ElapsedSeconds: elapsed.Seconds(),
+			})
 		}
 
 		fmt.Printf(Green("All scans completed in %.2fs\n\n"), time.Since(totalStart).Seconds())
+
+		if wantJSON || wantTXT {
+			dir, derr := export.DefaultDir()
+			if derr != nil {
+				PrintError(derr)
+				return false
+			}
+			if derr := export.EnsureDir(dir); derr != nil {
+				PrintError(derr)
+				return false
+			}
+
+			now := time.Now()
+			totalElapsed := time.Since(totalStart).Seconds()
+
+			jsonPayload := map[string]any{
+				"module":          "port",
+				"timestamp":       now.Format(time.RFC3339),
+				"mode":            "file",
+				"profile":         "default",
+				"results":         items,
+				"elapsed_seconds": totalElapsed,
+			}
+
+			if wantJSON {
+				p := filepath.Join(dir, export.Filename("port", "json", now))
+				if e := export.WriteJSON(p, jsonPayload); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			if wantTXT {
+				p := filepath.Join(dir, export.Filename("port", "txt", now))
+				txt := portFileTXT(items, "default", totalElapsed, now)
+				if e := export.WriteFile(p, []byte(txt)); e != nil {
+					PrintError(e)
+				} else {
+					PrintSaved(p)
+				}
+			}
+
+			fmt.Println()
+		}
+
 		return false
 	}
 
-	// single/profile mode
 	profile := "default"
 	target := ""
 
 	if len(args) == 1 {
-		target = args[0] // port <ip>
+		target = args[0]
 	} else if len(args) == 2 {
-		profile = args[0] // port <profile> <ip>
+		profile = args[0]
 		target = args[1]
 	} else {
-		fmt.Println(Yellow("[!] Usage: port <ip>  OR  port <profile> <ip>\n"))
+		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>\n"))
 		return false
 	}
 
@@ -205,5 +370,150 @@ func runPort(args []string) bool {
 
 	RenderPortResult(res)
 	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+
+	if wantJSON || wantTXT {
+		dir, derr := export.DefaultDir()
+		if derr != nil {
+			PrintError(derr)
+			return false
+		}
+		if derr := export.EnsureDir(dir); derr != nil {
+			PrintError(derr)
+			return false
+		}
+
+		now := time.Now()
+
+		jsonPayload := map[string]any{
+			"module":          "port",
+			"timestamp":       now.Format(time.RFC3339),
+			"target":          res.Target,
+			"profile":         profile,
+			"result":          res,
+			"elapsed_seconds": elapsed.Seconds(),
+		}
+
+		if wantJSON {
+			p := filepath.Join(dir, export.Filename("port", "json", now))
+			if e := export.WriteJSON(p, jsonPayload); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		if wantTXT {
+			p := filepath.Join(dir, export.Filename("port", "txt", now))
+			txt := portSingleTXT(res, profile, elapsed.Seconds(), now)
+			if e := export.WriteFile(p, []byte(txt)); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		fmt.Println()
+	}
+
 	return false
+}
+
+// ---------------------------
+// Port TXT formatter (no color)
+type portFileItemForTXT struct {
+	Target         string
+	Findings       []port.PortFinding
+	ElapsedSeconds float64
+}
+
+func portSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time.Time) string {
+	var sb strings.Builder
+	sb.WriteString("=== recon port ===\n")
+	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
+	sb.WriteString(fmt.Sprintf("Target  : %s\n", r.Target))
+	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
+
+	sb.WriteString(renderPortFindingsTXT(r.Findings))
+	sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", elapsedSeconds))
+	return sb.String()
+}
+
+func portFileTXT(items any, profile string, totalElapsedSeconds float64, t time.Time) string {
+	typed := []portFileItemForTXT{}
+
+	switch v := items.(type) {
+	case []struct {
+		Target         string
+		Findings       []port.PortFinding
+		ElapsedSeconds float64
+	}:
+		for _, it := range v {
+			typed = append(typed, portFileItemForTXT{
+				Target:         it.Target,
+				Findings:       it.Findings,
+				ElapsedSeconds: it.ElapsedSeconds,
+			})
+		}
+	default:
+
+	}
+
+	var sb strings.Builder
+	sb.WriteString("=== recon port ===\n")
+	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
+	sb.WriteString("Mode    : file\n")
+	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
+
+	for _, it := range typed {
+		sb.WriteString("========================================\n")
+		sb.WriteString(fmt.Sprintf("Target: %s\n\n", it.Target))
+		sb.WriteString(renderPortFindingsTXT(it.Findings))
+		sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", it.ElapsedSeconds))
+	}
+
+	sb.WriteString(fmt.Sprintf("Total Time: %.2fs\n\n", totalElapsedSeconds))
+	return sb.String()
+}
+
+func renderPortFindingsTXT(findings []port.PortFinding) string {
+	var sb strings.Builder
+	if len(findings) == 0 {
+		sb.WriteString("[!] No ports found (or host did not respond).\n")
+		return sb.String()
+	}
+
+	for _, f := range findings {
+		prefix := "?"
+		if f.State == "OPEN" {
+			prefix = "+"
+		} else if f.State == "CLOSED" {
+			prefix = "-"
+		}
+
+		sb.WriteString(fmt.Sprintf("[%s] Port %d ---------------------------\n", prefix, f.Port))
+		sb.WriteString(fmt.Sprintf("    %s - %s\n", f.Proto, f.Service))
+		sb.WriteString(fmt.Sprintf("    Status : %s\n", f.State))
+		if strings.TrimSpace(f.Version) != "" {
+			sb.WriteString(fmt.Sprintf("    Version: %s\n", f.Version))
+		}
+
+		if len(f.Scripts) > 0 {
+			sb.WriteString("\n")
+			for _, s := range f.Scripts {
+				sb.WriteString(fmt.Sprintf("    %s:\n", s.ID))
+				for _, line := range strings.Split(s.Output, "\n") {
+					line = strings.TrimRight(line, " \t")
+					if line == "" {
+						continue
+					}
+					sb.WriteString("      " + line + "\n")
+				}
+				sb.WriteString("\n")
+			}
+		} else {
+			sb.WriteString("\n")
+		}
+	}
+
+	return sb.String()
 }
