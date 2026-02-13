@@ -2,7 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"github.com/nartodono/recon/internal/export/internal/modules/host"
+	"github.com/nartodono/recon/internal/modules/host"
 )
 
 type HostCounts struct {
