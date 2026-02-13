@@ -89,7 +89,7 @@ func runHost(args []string) bool {
 			RenderHostResult(res)
 			all = append(all, res)
 
-			fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
+			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 			CountHostStatus(res, &counts)
 		}
 
@@ -169,7 +169,7 @@ func runHost(args []string) bool {
 	}
 
 	RenderHostResult(res)
-	fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
+	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 
 	if wantJSON || wantTXT {
 		dir, derr := export.DefaultDir()
@@ -219,85 +219,6 @@ func runHost(args []string) bool {
 
 // ---------------------------
 // PORT
-func getPortExtraArgs(profile string) ([]string, bool) {
-	var extraArgs []string
-	switch profile {
-	case "default":
-		extraArgs = []string{"-sC", "-sV"}
-	case "common":
-		extraArgs = []string{"-sV", "--top-ports", "1000", "--version-light"}
-	case "deep":
-		extraArgs = []string{"-sC", "-sV", "-O", "--traceroute", "--script", "(default or safe or discovery) and not (dos or intrusive or exploit)"}
-	case "ftp":
-		extraArgs = []string{"-p", "21", "-sV", "--script=ftp-anon,ftp-syst,ftp-bounce"}
-	case "ftp-deep":
-		extraArgs = []string{"-p", "21", "-sV", "--script=(ftp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "ssh":
-		extraArgs = []string{"-p", "22", "-sV", "--script=ssh-hostkey,ssh2-enum-algos,ssh-auth-methods,banner"}
-	case "ssh-deep":
-		extraArgs = []string{"-p", "22", "-sV", "--script=(ssh-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "smtp":
-		extraArgs = []string{"-p", "25,587", "-sV", "--script=smtp-commands,smtp-enum-users"}
-	case "smtp-deep":
-		extraArgs = []string{"-p", "25,587", "-sV", "--script=(smtp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "dns":
-		extraArgs = []string{"-p", "53", "-sV", "--script=dns-nsid,dns-recursion"}
-	case "dns-deep":
-		extraArgs = []string{"-p", "53", "-sV", "--script=(dns-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "web":
-		extraArgs = []string{"-p", "80,443", "-sV", "--script=http-title,http-headers,http-methods,http-enum,http-server-header"}
-	case "web-deep":
-		extraArgs = []string{"-p", "80,443", "-sV", "--script=(http-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "kerberos":
-		extraArgs = []string{"-p", "88", "-sV", "--script=krb5-enum-users"}
-	case "kerberos-deep":
-		extraArgs = []string{"-p", "88", "-sV", "--script=(krb5-* and not (brute or dos or exploit))"}
-	case "snmp":
-		extraArgs = []string{"-sU", "-p", "161", "-sV", "--script=snmp-info,snmp-sysdescr,snmp-interfaces"}
-	case "snmp-deep":
-		extraArgs = []string{"-sU", "-p", "161", "-sV", "--script=(snmp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "ldap":
-		extraArgs = []string{"-p", "389", "-sV", "--script=ldap-rootdse,ldap-search"}
-	case "ldap-deep":
-		extraArgs = []string{"-p", "389", "-sV", "--script=(ldap-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "smb":
-		extraArgs = []string{"-p", "445", "-sV", "--script=smb-os-discovery,smb2-security-mode,smb2-time,smb-protocols"}
-	case "smb-deep":
-		extraArgs = []string{"-p", "445", "-sV", "--script=(smb-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "mssql":
-		extraArgs = []string{"-p", "1433", "-sV", "--script=ms-sql-info,ms-sql-ntlm-info"}
-	case "mssql-deep":
-		extraArgs = []string{"-p", "1433", "-sV", "--script=(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "mysql":
-		extraArgs = []string{"-p", "3306", "-sV", "--script=mysql-info,mysql-capabilities"}
-	case "mysql-deep":
-		extraArgs = []string{"-p", "3306", "-sV", "--script=(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "rdp":
-		extraArgs = []string{"-p", "3389", "-sV", "--script=rdp-ntlm-info,rdp-enum-encryption"}
-	case "rdp-deep":
-		extraArgs = []string{"-p", "3389", "-sV", "--script=(rdp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "postgresql":
-		extraArgs = []string{"-p", "5432", "-sV", "--script=pgsql-info"}
-	case "postgresql-deep":
-		extraArgs = []string{"-p", "5432", "-sV", "--script=(pgsql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "vnc":
-		extraArgs = []string{"-p", "5900", "-sV", "--script=vnc-info"}
-	case "vnc-deep":
-		extraArgs = []string{"-p", "5900", "-sV", "--script=(vnc-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "winrm":
-		extraArgs = []string{"-p", "5985,5986", "-sV", "--script=wsman-info"}
-	case "winrm-deep":
-		extraArgs = []string{"-p", "5985,5986", "-sV", "--script=(wsman-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}
-	case "vuln":
-		extraArgs = []string{"-sV", "--script=vuln and not (dos or intrusive or exploit)"}
-	case "vuln-deep":
-		extraArgs = []string{"-sV", "--script=(vuln or dos or intrusive or exploit)"}
-	default:
-		return nil, false
-	}
-	return extraArgs, true
-}
-
 func runPort(args []string) bool {
 	args, wantJSON, wantTXT := parseExportFlags(args)
 
@@ -307,36 +228,25 @@ func runPort(args []string) bool {
 	}
 
 	// ---------------------------
-	// File mode:
-	//   port -f targets.txt
-	//   port <profile> -f targets.txt
-	if args[0] == "-f" || (len(args) >= 3 && args[1] == "-f") {
-		profile := "default"
-		file := ""
+	// FILE MODE
+	//   port -f <file>
+	//   port <profile> -f <file>
+	profile := "default"
+	filePath := ""
 
-		if args[0] == "-f" {
-			if len(args) != 2 {
-				fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
-				return false
-			}
-			file = args[1]
-		} else {
-			// <profile> -f <file>
-			if len(args) != 3 {
-				fmt.Println(Yellow("[!] Usage: port <profile> -f <file.txt>\n"))
-				return false
-			}
-			profile = args[0]
-			file = args[2]
-		}
-
-		extraArgs, ok := getPortExtraArgs(profile)
-		if !ok {
-			fmt.Println(Yellow("[!] Unknown port profile. Try: default, common, deep, smb, smb-deep, web, web-deep, vuln, vuln-deep, ...\n"))
+	if args[0] == "-f" {
+		if len(args) != 2 {
+			fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
 			return false
 		}
+		filePath = args[1]
+	} else if len(args) == 3 && args[1] == "-f" {
+		profile = args[0]
+		filePath = args[2]
+	}
 
-		targets, err := input.LoadTargetsFromFile(file)
+	if filePath != "" {
+		targets, err := input.LoadTargetsFromFile(filePath)
 		if err != nil {
 			PrintError(err)
 			return false
@@ -346,24 +256,28 @@ func runPort(args []string) bool {
 			return false
 		}
 
-		isDeep := strings.Contains(profile, "deep")
+		extraArgs, ok := portExtraArgs(profile)
+		if !ok {
+			fmt.Println(Yellow("[!] Unknown port profile. Type 'help' to see available commands.\n"))
+			return false
+		}
+
+		// limits: non-deep = 30, deep = 10
 		maxTargets := 30
+		isDeep := strings.Contains(profile, "deep")
 		if isDeep {
 			maxTargets = 10
+			fmt.Println(Yellow("[!] Deep profile selected in file mode. This may take a long time per target."))
 		}
+
 		if len(targets) > maxTargets {
-			if isDeep {
-				fmt.Printf(Yellow("[!] Deep profile in file mode. Limiting targets to first %d (from %d).\n"), maxTargets, len(targets))
-			} else {
-				fmt.Printf(Yellow("[!] File mode limit: scanning first %d targets (from %d).\n"), maxTargets, len(targets))
-			}
+			fmt.Printf(Yellow("[!] File contains %d targets. Limiting to first %d targets.\n\n"), len(targets), maxTargets)
 			targets = targets[:maxTargets]
 		}
 
 		timeout := 8 * time.Minute
 		if isDeep {
 			timeout = 25 * time.Minute
-			fmt.Println(Yellow("[!] Deep profile selected. This may take a long time per target..."))
 		}
 
 		totalStart := time.Now()
@@ -394,7 +308,7 @@ func runPort(args []string) bool {
 			fmt.Printf(Cyan("Target: %s\n\n"), t)
 
 			RenderPortResult(res)
-			fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
+			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 
 			items = append(items, PortFileItem{
 				Target:         t,
@@ -426,10 +340,6 @@ func runPort(args []string) bool {
 				"profile":         profile,
 				"results":         items,
 				"elapsed_seconds": totalElapsed,
-				"limit": map[string]any{
-					"max_targets": maxTargets,
-					"deep":        isDeep,
-				},
 			}
 
 			if wantJSON {
@@ -458,25 +368,23 @@ func runPort(args []string) bool {
 	}
 
 	// ---------------------------
-	// Single mode:
+	// SINGLE MODE
 	//   port <ip>
 	//   port <profile> <ip>
-	profile := "default"
 	target := ""
-
 	if len(args) == 1 {
 		target = args[0]
 	} else if len(args) == 2 {
 		profile = args[0]
 		target = args[1]
 	} else {
-		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>  OR  port <profile> -f <file.txt>\n"))
+		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>\n"))
 		return false
 	}
 
-	extraArgs, ok := getPortExtraArgs(profile)
+	extraArgs, ok := portExtraArgs(profile)
 	if !ok {
-		fmt.Println(Yellow("[!] Unknown port profile. Try: default, common, deep, smb, smb-deep, web, web-deep, vuln, vuln-deep, ...\n"))
+		fmt.Println(Yellow("[!] Unknown port profile.\n"))
 		return false
 	}
 
@@ -501,7 +409,7 @@ func runPort(args []string) bool {
 	}
 
 	RenderPortResult(res)
-	fmt.Printf("    Time  : %.2fs\\n\\n", elapsed.Seconds())
+	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 
 	if wantJSON || wantTXT {
 		dir, derr := export.DefaultDir()
@@ -548,6 +456,102 @@ func runPort(args []string) bool {
 	}
 
 	return false
+}
+
+// portExtraArgs maps a profile name to nmap arguments (excluding -Pn -oX - <target>).
+func portExtraArgs(profile string) ([]string, bool) {
+	switch profile {
+	case "default":
+		return []string{"-sC", "-sV"}, true
+	case "aggr":
+		return []string{"-A"}, true
+	case "common":
+		return []string{"-sV", "--top-ports", "1000", "--version-light"}, true
+	case "deep":
+		return []string{"-sC", "-sV", "-O", "--traceroute", "--script", "(default or safe or discovery) and not (dos or intrusive or exploit)"}, true
+
+	case "ftp":
+		return []string{"-p", "21", "-sV", "--script=ftp-anon,ftp-syst,ftp-bounce"}, true
+	case "ftp-deep":
+		return []string{"-p", "21", "-sV", "--script=(ftp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "ssh":
+		return []string{"-p", "22", "-sV", "--script=ssh-hostkey,ssh2-enum-algos,ssh-auth-methods,banner"}, true
+	case "ssh-deep":
+		return []string{"-p", "22", "-sV", "--script=(ssh-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "smtp":
+		return []string{"-p", "25,587", "-sV", "--script=smtp-commands,smtp-enum-users"}, true
+	case "smtp-deep":
+		return []string{"-p", "25,587", "-sV", "--script=(smtp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "dns":
+		return []string{"-p", "53", "-sV", "--script=dns-nsid,dns-recursion"}, true
+	case "dns-deep":
+		return []string{"-p", "53", "-sV", "--script=(dns-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "web":
+		return []string{"-p", "80,443", "-sV", "--script=http-title,http-headers,http-methods,http-enum,http-server-header"}, true
+	case "web-deep":
+		return []string{"-p", "80,443", "-sV", "--script=(http-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "kerberos":
+		return []string{"-p", "88", "-sV", "--script=krb5-enum-users"}, true
+	case "kerberos-deep":
+		return []string{"-p", "88", "-sV", "--script=(krb5-* and not (brute or dos or exploit))"}, true
+
+	case "snmp":
+		return []string{"-sU", "-p", "161", "-sV", "--script=snmp-info,snmp-sysdescr,snmp-interfaces"}, true
+	case "snmp-deep":
+		return []string{"-sU", "-p", "161", "-sV", "--script=(snmp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "ldap":
+		return []string{"-p", "389", "-sV", "--script=ldap-rootdse,ldap-search"}, true
+	case "ldap-deep":
+		return []string{"-p", "389", "-sV", "--script=(ldap-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "smb":
+		return []string{"-p", "445", "-sV", "--script=smb-os-discovery,smb2-security-mode,smb2-time,smb-protocols"}, true
+	case "smb-deep":
+		return []string{"-p", "445", "-sV", "--script=(smb-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "mssql":
+		return []string{"-p", "1433", "-sV", "--script=ms-sql-info,ms-sql-ntlm-info"}, true
+	case "mssql-deep":
+		return []string{"-p", "1433", "-sV", "--script=(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "mysql":
+		return []string{"-p", "3306", "-sV", "--script=mysql-info,mysql-capabilities"}, true
+	case "mysql-deep":
+		return []string{"-p", "3306", "-sV", "--script=(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "rdp":
+		return []string{"-p", "3389", "-sV", "--script=rdp-ntlm-info,rdp-enum-encryption"}, true
+	case "rdp-deep":
+		return []string{"-p", "3389", "-sV", "--script=(rdp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "postgresql":
+		return []string{"-p", "5432", "-sV", "--script=pgsql-info"}, true
+	case "postgresql-deep":
+		return []string{"-p", "5432", "-sV", "--script=(pgsql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "vnc":
+		return []string{"-p", "5900", "-sV", "--script=vnc-info"}, true
+	case "vnc-deep":
+		return []string{"-p", "5900", "-sV", "--script=(vnc-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "winrm":
+		return []string{"-p", "5985,5986", "-sV", "--script=wsman-info"}, true
+	case "winrm-deep":
+		return []string{"-p", "5985,5986", "-sV", "--script=(wsman-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+
+	case "vuln":
+		return []string{"-sV", "--script=vuln and not (dos or intrusive or exploit)"}, true
+	case "vuln-deep":
+		return []string{"-sV", "--script=(vuln or dos or intrusive or exploit)"}, true
+	default:
+		return nil, false
+	}
 }
 
 // ---------------------------
