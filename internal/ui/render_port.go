@@ -29,6 +29,8 @@ func RenderPortResult(r port.Result) {
 
 		if strings.TrimSpace(f.Version) != "" {
 		    fmt.Printf("    Version : %s\n", f.Version)
+		} else {
+		    fmt.Printf("    Version : UNKNOWN\n")
 		}
 
 		if len(f.Scripts) > 0 {
