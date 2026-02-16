@@ -23,7 +23,7 @@ func main() {
 		}
 
 		if cmd == "profile" || cmd == "list" {
-			ui.PrintBannerProfile()
+			ui.PrintProfile()
 			return
 		}
 	
