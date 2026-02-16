@@ -18,7 +18,7 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 ## Interactive Mode
 
 <p align="center">
-  <img src="src/img/recon_sh.png" width="55%">
+  <img src="src/img/recon_sh.png" width="35%">
 </p>
 
 ---
@@ -26,7 +26,7 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 ## CLI Help
 
 <p align="center">
-  <img src="src/img/recon_h.png" width="55%">
+  <img src="src/img/recon_h.png" width="35%">
 </p>
 
 ---
@@ -148,16 +148,16 @@ NOTES
 ## Example
 
 ### Vulnerability Scan
-<p align="center"> <img src="src/img/recon_port2.png" width="55%"> </p>
+<p align="center"> <img src="src/img/recon_port2.png" width="35%"> </p>
 
 ### Host Scan
-<p align="center"> <img src="src/img/recon_host1.png" width="55%"> </p>
+<p align="center"> <img src="src/img/recon_host1.png" width="35%"> </p>
 
 ### Port Scan
-<p align="center"> <img src="src/img/recon_port1.png" width="55%"> </p>
+<p align="center"> <img src="src/img/recon_port1.png" width="35%"> </p>
 
 ### Saved TXT Output
-<p align="center"> <img src="src/img/recon_port_txt.png" width="55%"> </p>
+<p align="center"> <img src="src/img/recon_port_txt.png" width="35%"> </p>
 
 ### Saved JSON Output
-<p align="center"> <img src="src/img/recon_host_json.png" width="50%"> </p>
+<p align="center"> <img src="src/img/recon_host_json.png" width="35%"> </p>
