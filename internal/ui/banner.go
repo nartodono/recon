@@ -162,8 +162,16 @@ General syntax:
   recon port <profile> <ip> [--txt] [--json]
   recon port <profile> -f <file> [--txt] [--json]
 
+
 Use interactive shell mode:
+
   recon
+
+
+View Port Scanning Profile Lists:
+
+  recon profile / recon list
+
 `)
 }
 
