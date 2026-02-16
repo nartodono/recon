@@ -15,9 +15,10 @@ func PrintBanner() {
 
 	fmt.Println("  " + Green("host") + " <ip>            - Host status (ping + nmap -sn)")
 	fmt.Println("  " + Green("port") + " <ip>            - Port checker (nmap)")
-	fmt.Println("  " + Cyan("help") + " / ?             - Show commands")
-	fmt.Println("  " + Cyan("clear") + " / cls          - Clear screen")
-	fmt.Println("  " + Cyan("exit") + " / q             - Quit")
+	fmt.Println("  " + Cyan("profile  / list") + "      - Show Port Profile Lists")
+	fmt.Println("  " + Cyan("help / ?") + "             - Show commands")
+	fmt.Println("  " + Cyan("clear / cls") + "          - Clear screen")
+	fmt.Println("  " + Cyan("exi / q t") + "            - Quit")
 	fmt.Println()
 }
 
@@ -37,6 +38,9 @@ Available commands inside the shell:
 
   port <profile> <ip>
       Run a specific port profile against a target
+
+  profile / list
+      Show available port scanning profile
 
   help / ?
       Show help information
@@ -87,8 +91,8 @@ Both --txt and --json can be used together.
 PORT PROFILES
 ────────────────────────────────────────
 Standard and Deep variants are available:
-
-  Common / Deep
+  default
+  common / deep
   ftp / ftp-deep
   ssh / ssh-deep
   smtp / smtp-deep
@@ -109,6 +113,8 @@ Vulnerability modes:
   vuln          Safe vulnerability checks
   vuln-deep     Aggressive checks (may include intrusive/DoS)
 
+If no port profile is specified, the default mode will be used.
+
 
 ────────────────────────────────────────
 EXAMPLES
@@ -126,6 +132,14 @@ For detailed module documentation, command references,
 and internal Nmap mappings, please visit:
 
   https://github.com/nartodono/recon
+
+────────────────────────────────────────
+Notes
+────────────────────────────────────────
+Currently, recon port scanning in deep mode is limited to a
+maximum of 10 IPs (deep, -deep) and 30 IPs for normal mode
+(except -deep, including default and common) to ensure the scan
+completes successfully and results can be properly displayed.
 `)
 }
 
@@ -153,3 +167,34 @@ Use interactive shell mode:
 `)
 }
 
+func PrintProfile() {
+	fmt.Println(`
+────────────────────────────────────────
+PORT PROFILES
+────────────────────────────────────────
+Standard and Deep variants are available:
+  default
+  common / deep
+  ftp / ftp-deep
+  ssh / ssh-deep
+  smtp / smtp-deep
+  dns / dns-deep
+  web / web-deep
+  kerberos / kerberos-deep
+  snmp / snmp-deep
+  ldap / ldap-deep
+  smb / smb-deep
+  mssql / mssql-deep
+  mysql / mysql-deep
+  postgresql / postgresql-deep
+  rdp / rdp-deep
+  vnc / vnc-deep
+  winrm / winrm-deep
+
+Vulnerability modes:
+  vuln          Safe vulnerability checks
+  vuln-deep     Aggressive checks (may include intrusive/DoS)
+
+If no port profile is specified, the default mode will be used.
+`)
+}
