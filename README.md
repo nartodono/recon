@@ -7,6 +7,14 @@ It supports both **interactive shell mode** and **CLI shortcut mode**, with buil
 
 ---
 
+## 📚 Port Scanning Profiles
+
+For a complete and detailed list of available port profiles and their Nmap mappings:
+
+➡️ **[View Port Scanning Profile Lists](src/profile_lists.md)**
+
+---
+
 ## Interactive Mode
 
 <p align="center">
@@ -68,9 +76,6 @@ go build ./cmd/recon
 ```
 
 ## Tools Usage
-
-For a complete list of available port profiles, see:
-[`Port Scanning Profile Lists`](src/profile_lists)
 
 INTERACTIVE MODE
 ----------------
