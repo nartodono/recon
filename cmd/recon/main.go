@@ -21,6 +21,11 @@ func main() {
 			ui.PrintHelp()
 			return
 		}
+
+		if cmd == "profile" || cmd == "list" {
+			ui.PrintBannerProfile()
+			return
+		}
 	
 		args := os.Args[2:]
 		ui.RunCommand(cmd, args)
