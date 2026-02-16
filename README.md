@@ -5,6 +5,19 @@ It supports both **interactive shell mode** and **CLI shortcut mode**, with buil
 
 > ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
+
+## Interactive Mode
+
+<p align="center">
+  <img src="src/img/recon_sh.png" width="800">
+</p>
+
+## CLI Help
+
+<p align="center">
+  <img src="src/img/recon_h.png" width="800">
+</p>
+
 ---
 
 ## Features
