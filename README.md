@@ -5,17 +5,20 @@ It supports both **interactive shell mode** and **CLI shortcut mode**, with buil
 
 > ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
+---
 
 ## Interactive Mode
 
 <p align="center">
-  <img src="src/img/recon_sh.png" width="50%">
+  <img src="src/img/recon_sh.png" width="55%">
 </p>
+
+---
 
 ## CLI Help
 
 <p align="center">
-  <img src="src/img/recon_h.png" width="50%">
+  <img src="src/img/recon_h.png" width="55%">
 </p>
 
 ---
@@ -48,15 +51,16 @@ It supports both **interactive shell mode** and **CLI shortcut mode**, with buil
 ## Installation
 
 ### Using `go install`
+
 ```bash
 go install github.com/nartodono/recon/cmd/recon@latest
 ```
-OR
+If module resolution issues occur:
 ```bash
 GOPROXY=direct GOSUMDB=off go install github.com/nartodono/recon/cmd/recon@main
 ```
 
-### using `git clone`
+### Using `git clone`
 ```bash
 git clone https://github.com/nartodono/recon.git
 cd recon
@@ -65,15 +69,13 @@ go build ./cmd/recon
 
 ## Tools Usage
 
-
-### INTERACTIVE MODE
+INTERACTIVE MODE
 ----------------
 Start Recon without arguments:
-
+```bash
   recon
-
+```
 Inside the shell:
-
 ```bash
   recon > host 192.168.1.1 --txt --json
   recon > port 192.168.1.1
@@ -83,47 +85,40 @@ Inside the shell:
   recon > exit
 ```
 
-
-### CLI SHORTCUT MODE
+CLI SHORTCUT MODE
 -----------------
 Run directly from terminal:
-
 ```bash
   recon host 192.168.1.1 --txt --json
   recon port smb 192.168.1.20 --txt
   recon port web-deep 192.168.1.20 --txt --json
   recon port vuln-deep 192.168.1.1
 ```
-
 If no profile is specified:
-
 ```bash
   recon port 192.168.1.1
 ```
-
 The 'default' profile will be used automatically.
 
 
-### FILE MODE
+FILE MODE
 ---------
 Scan multiple targets from file (one IP per line):
-
 ```bash
   recon host -f targets.txt --txt --json
   recon port -f targets.txt --txt
   recon port deep -f targets.txt --txt --json
 ```
 
-
-### OUTPUT OPTIONS
+OUTPUT OPTIONS
 --------------
-  --txt   Print formatted text output
-  --json  Print structured JSON output
+  `--txt`   Print formatted text output
+  `--json`  Print structured JSON output
 
 Both flags can be used together.
 
 
-### NOTES
+NOTES
 -----
 - Results are automatically saved to:
     ~/recon_result/
@@ -144,25 +139,17 @@ Both flags can be used together.
 
 ## Example
 
-<p align="center">
-  <img src="src/img/recon_port2.png" width="50%">
-</p>
+### Vulnerability Scan
+<p align="center"> <img src="src/img/recon_port2.png" width="55%"> </p>
 
 ### Host Scan
-<p align="center">
-  <img src="src/img/recon_host1.png" width="50%">
-</p>
+<p align="center"> <img src="src/img/recon_host1.png" width="55%"> </p>
 
-<p align="center">
-  <img src="src/img/recon_host1.png" width="50%">
-</p>
+### Port Scan
+<p align="center"> <img src="src/img/recon_port1.png" width="55%"> </p>
 
-### Pot Scan
+### Saved TXT Output
+<p align="center"> <img src="src/img/recon_port_txt.png" width="55%"> </p>
 
-<p align="center">
-  <img src="src/img/recon_port1.png" width="50%">
-</p>
-
-<p align="center">
-  <img src="src/img/recon_port_txt.png" width="50%">
-</p>
+### Saved JSON Output
+<p align="center"> <img src="src/img/recon_host_json.png" width="50%"> </p>
