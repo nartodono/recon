@@ -124,10 +124,10 @@ NOTES
     ~/recon_result/
 
 - Output filenames follow:
-    recon-host-YYYYMMDD-HHMMSS.txt
-    recon-host-YYYYMMDD-HHMMSS.json
-    recon-port-YYYYMMDD-HHMMSS.txt
-    recon-port-YYYYMMDD-HHMMSS.json
+    `recon-host-YYYYMMDD-HHMMSS.txt`
+    `recon-host-YYYYMMDD-HHMMSS.json`
+    `recon-port-YYYYMMDD-HHMMSS.txt
+    `recon-port-YYYYMMDD-HHMMSS.json
 
 - Multi-target limits:
     Normal profiles  → max 30 targets
