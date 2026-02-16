@@ -15,6 +15,8 @@ func RunShell() {
 	completer := readline.NewPrefixCompleter(
 		readline.PcItem("help"),
 		readline.PcItem("?"),
+		readline.PcItem("profile"),
+		readline.PcItem("list"),
 		readline.PcItem("clear"),
 		readline.PcItem("cls"),
 		readline.PcItem("exit"),
