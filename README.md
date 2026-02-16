@@ -65,7 +65,7 @@ go build ./cmd/recon
 
 ## Tools Usage
 
-```text
+
 INTERACTIVE MODE
 ----------------
 Start Recon without arguments:
@@ -74,26 +74,32 @@ Start Recon without arguments:
 
 Inside the shell:
 
+```bash
   recon > host 192.168.1.1 --txt --json
   recon > port 192.168.1.1
   recon > port web-deep 192.168.1.1 --txt
   recon > port vuln 192.168.1.1
   recon > profile
   recon > exit
+```
 
 
 CLI SHORTCUT MODE
 -----------------
 Run directly from terminal:
 
+```bash
   recon host 192.168.1.1 --txt --json
   recon port smb 192.168.1.20 --txt
   recon port web-deep 192.168.1.20 --txt --json
   recon port vuln-deep 192.168.1.1
+```
 
 If no profile is specified:
 
+```bash
   recon port 192.168.1.1
+```
 
 The 'default' profile will be used automatically.
 
@@ -102,9 +108,11 @@ FILE MODE
 ---------
 Scan multiple targets from file (one IP per line):
 
+```bash
   recon host -f targets.txt --txt --json
   recon port -f targets.txt --txt
   recon port deep -f targets.txt --txt --json
+```
 
 
 OUTPUT OPTIONS
