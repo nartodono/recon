@@ -9,13 +9,13 @@ It supports both **interactive shell mode** and **CLI shortcut mode**, with buil
 ## Interactive Mode
 
 <p align="center">
-  <img src="src/img/recon_sh.png" width="70%">
+  <img src="src/img/recon_sh.png" width="60%">
 </p>
 
 ## CLI Help
 
 <p align="center">
-  <img src="src/img/recon_h.png" width="650">
+  <img src="src/img/recon_h.png" width="60%">
 </p>
 
 ---
