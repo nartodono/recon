@@ -69,6 +69,9 @@ go build ./cmd/recon
 
 ## Tools Usage
 
+For a complete list of available port profiles, see:
+[`Port Scanning Profile Lists`](src/profile_lists.txt)
+
 INTERACTIVE MODE
 ----------------
 Start Recon without arguments:
