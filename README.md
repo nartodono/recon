@@ -66,7 +66,7 @@ go build ./cmd/recon
 ## Tools Usage
 
 
-INTERACTIVE MODE
+### INTERACTIVE MODE
 ----------------
 Start Recon without arguments:
 
@@ -84,7 +84,7 @@ Inside the shell:
 ```
 
 
-CLI SHORTCUT MODE
+### CLI SHORTCUT MODE
 -----------------
 Run directly from terminal:
 
@@ -104,7 +104,7 @@ If no profile is specified:
 The 'default' profile will be used automatically.
 
 
-FILE MODE
+### FILE MODE
 ---------
 Scan multiple targets from file (one IP per line):
 
@@ -115,7 +115,7 @@ Scan multiple targets from file (one IP per line):
 ```
 
 
-OUTPUT OPTIONS
+### OUTPUT OPTIONS
 --------------
   --txt   Print formatted text output
   --json  Print structured JSON output
@@ -123,7 +123,7 @@ OUTPUT OPTIONS
 Both flags can be used together.
 
 
-NOTES
+### NOTES
 -----
 - Results are automatically saved to:
     ~/recon_result/
@@ -142,3 +142,27 @@ NOTES
     nmap
     ping
 
+## Example
+
+<p align="center">
+  <img src="src/img/recon_port2.png" width="50%">
+</p>
+
+### Host Scan
+<p align="center">
+  <img src="src/img/recon_host1.png" width="50%">
+</p>
+
+<p align="center">
+  <img src="src/img/recon_host1.png" width="50%">
+</p>
+
+### Pot Scan
+
+<p align="center">
+  <img src="src/img/recon_port1.png" width="50%">
+</p>
+
+<p align="center">
+  <img src="src/img/recon_port_txt.png" width="50%">
+</p>
