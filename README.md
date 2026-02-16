@@ -63,3 +63,74 @@ cd recon
 go build ./cmd/recon
 ```
 
+## Tools Usage
+
+```text
+INTERACTIVE MODE
+----------------
+Start Recon without arguments:
+
+  recon
+
+Inside the shell:
+
+  recon > host 192.168.1.1 --txt --json
+  recon > port 192.168.1.1
+  recon > port web-deep 192.168.1.1 --txt
+  recon > port vuln 192.168.1.1
+  recon > profile
+  recon > exit
+
+
+CLI SHORTCUT MODE
+-----------------
+Run directly from terminal:
+
+  recon host 192.168.1.1 --txt --json
+  recon port smb 192.168.1.20 --txt
+  recon port web-deep 192.168.1.20 --txt --json
+  recon port vuln-deep 192.168.1.1
+
+If no profile is specified:
+
+  recon port 192.168.1.1
+
+The 'default' profile will be used automatically.
+
+
+FILE MODE
+---------
+Scan multiple targets from file (one IP per line):
+
+  recon host -f targets.txt --txt --json
+  recon port -f targets.txt --txt
+  recon port deep -f targets.txt --txt --json
+
+
+OUTPUT OPTIONS
+--------------
+  --txt   Print formatted text output
+  --json  Print structured JSON output
+
+Both flags can be used together.
+
+
+NOTES
+-----
+- Results are automatically saved to:
+    ~/recon_result/
+
+- Output filenames follow:
+    recon-host-YYYYMMDD-HHMMSS.txt
+    recon-host-YYYYMMDD-HHMMSS.json
+    recon-port-YYYYMMDD-HHMMSS.txt
+    recon-port-YYYYMMDD-HHMMSS.json
+
+- Multi-target limits:
+    Normal profiles  → max 30 targets
+    Deep profiles    → max 10 targets
+
+- Recon checks required dependencies on startup:
+    nmap
+    ping
+
