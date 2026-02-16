@@ -14,7 +14,11 @@ import (
 
 func RunCommand(cmd string, args []string) bool {
 	switch cmd {
-
+		
+	case "profile", "list":
+		PrintProfile()
+		return false
+		
 	case "help", "-h", "?":
 		PrintBannerHelp()
 		return false
