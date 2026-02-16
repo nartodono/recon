@@ -171,7 +171,6 @@ Use interactive shell mode:
 View Port Scanning Profile Lists:
 
   recon profile / recon list
-
 `)
 }
 
