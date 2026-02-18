@@ -13,7 +13,7 @@ func PrintBanner() {
 ` + ColorReset)
 	// fmt.Println()
 
-	fmt.Println("  " + Green("host") + " <ip>            - Host status (ping + nmap -sn)")
+	fmt.Println("  " + Green("host") + " <ip>            - Host status (ping + nmap)")
 	fmt.Println("  " + Green("port") + " <ip>            - Port checker (nmap)")
 	fmt.Println("  " + Cyan("profile  / list") + "      - Show Port Profile Lists")
 	fmt.Println("  " + Cyan("help / ?") + "             - Show commands")
