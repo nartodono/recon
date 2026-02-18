@@ -97,35 +97,39 @@ func nmapSnCheck(target string) NmapSignal {
 	return NmapNoConfirm
 }
 
-// pnProbe is a lightweight confirmation step when ICMP/host-discovery is likely filtered.
-// It does a small TCP probe with -Pn (skip host discovery) and treats any OPEN/CLOSED
-// response as a positive confirmation that the host is up (ICMP likely filtered).
-// If all probed ports are FILTERED (no response), we keep it as UNKNOWN.
 func pnProbe(target string) (bool, string) {
-	// Keep this small & safe: few common ports, no scripts, no version detection.
-	out, err := runCmd(25*time.Second,
+	out, err := runCmd(90*time.Second,
 		"nmap",
-		"-Pn", "-n",
-		"-p", "22,80,443",
-		"--host-timeout", "12s",
+		"-4",         
+		"-Pn",        
+		"-n",         
 		"--reason",
+		"--max-retries", "2",
+		"--host-timeout", "60s",
 		target,
 	)
 	l := strings.ToLower(out)
 
 	if err != nil {
-		return false, "TCP probe (-Pn) failed to run."
+		// Nmap can still output useful info even if err != nil, so we parse anyway.
 	}
 
-	// Any OPEN/CLOSED means target answered (open = SYN/ACK, closed = RST).
+
 	if strings.Contains(l, "/tcp open") {
-		return true, "Host confirmed UP via TCP probe (-Pn): at least one port is OPEN (ICMP likely filtered)."
+		return true, "Host confirmed UP via -Pn scan: at least one TCP port is OPEN (ICMP likely filtered)."
 	}
 	if strings.Contains(l, "/tcp closed") {
-		return true, "Host confirmed UP via TCP probe (-Pn): at least one port is CLOSED (RST received; ICMP likely filtered)."
+		return true, "Host confirmed UP via -Pn scan: at least one TCP port is CLOSED (RST received; ICMP likely filtered)."
 	}
 
-	return false, "No TCP response on 22/80/443 (all filtered/timeouts). Host may be down or heavily filtered."
+	if strings.Contains(l, "host is up") {
+		return true, "Host confirmed UP via -Pn scan (Nmap reports host is up)."
+	}
+
+	if err != nil {
+		return false, "No TCP response on default top ports (all filtered/timeouts) and scan had errors. Host may be down or heavily filtered."
+	}
+	return false, "No TCP response on default top ports (all filtered/timeouts). Host may be down or heavily filtered."
 }
 
 func DecideStatus(p PingSignal, n NmapSignal) (FinalStatus, string) {
@@ -161,8 +165,6 @@ func Check(target string) (Result, error) {
 	n := nmapSnCheck(target)
 	st, hint := DecideStatus(p, n)
 
-	// Fallback: if ICMP + host discovery look blocked, confirm via tiny -Pn TCP probe.
-	// This resolves the classic case: ping RTO + nmap -sn down, but -Pn scan finds host.
 	if st == StatusUNKNOWN && p == PingRTO && n == NmapDown {
 		if ok, phint := pnProbe(target); ok {
 			st = StatusUP
