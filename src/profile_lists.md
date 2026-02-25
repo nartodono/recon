@@ -64,8 +64,8 @@ Each service profile focuses on specific ports and script sets.
 
 | Profile | Nmap Flags | Description |
 |----------|------------|-------------|
-| vuln | `-sV --script "vuln and not (dos or intrusive or exploit)"` | Runs vulnerability scripts excluding intrusive, exploit, and DoS categories. |
-| vuln-deep | `-sV --script "(vuln or dos or intrusive or exploit)"` | Includes intrusive, exploit, and DoS scripts. Use with caution. |
+| vuln | `-sV --version-light --script vuln` | Runs NSE vulnerability scripts with lightweight version detection. Balanced between runtime and useful findings. |
+| vuln-deep | `-sV --version-light --script "vuln or exploit" --script-timeout 3m --host-timeout 30m --max-retries 2 -T4` | Extended vulnerability scan including exploit-category scripts. Allows longer execution time while enforcing runtime limits to prevent excessive delays. |
 
 ---
 
