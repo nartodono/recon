@@ -31,20 +31,16 @@ type Result struct {
 	Findings []PortFinding
 }
 
-func runCmd(timeout time.Duration, name string, args ...string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+func runCmd(name string, args ...string) (stdout string, stderr string, err error) {
+	cmd := exec.Command(name, args...)
 
-	cmd := exec.CommandContext(ctx, name, args...)
-	var buf bytes.Buffer
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
-	err := cmd.Run()
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
 
-	if ctx.Err() == context.DeadlineExceeded {
-		return buf.String(), fmt.Errorf("%s timed out", name)
-	}
-	return buf.String(), err
+	err = cmd.Run()
+
+	return outBuf.String(), errBuf.String(), err
 }
 
 func Scan(target string, extraArgs []string, timeout time.Duration) (Result, error) {
@@ -60,17 +56,18 @@ func Scan(target string, extraArgs []string, timeout time.Duration) (Result, err
 	baseArgs = append(baseArgs, extraArgs...)
 	baseArgs = append(baseArgs, target)
 
-	out, err := runCmd(timeout, "nmap", baseArgs...)
+	stdout, stderr, err := runCmd("nmap", baseArgs...)
 
-	if err != nil && !strings.Contains(strings.ToLower(out), "<nmaprun") {
-
-		return Result{}, fmt.Errorf("nmap error: %v\n%s", err, out)
+	if err != nil && !strings.Contains(strings.ToLower(stdout), "<nmaprun") {
+		combined := strings.TrimSpace(stdout + "\n" + stderr)
+		return Result{}, fmt.Errorf("nmap error: %v\n%s", err, combined)
 	}
 
 	var run NmapRun
-	if e := xml.Unmarshal([]byte(out), &run); e != nil {
-		return Result{}, fmt.Errorf("failed to parse nmap XML: %w", e)
+	if e := xml.Unmarshal([]byte(stdout), &run); e != nil {
+		return Result{}, fmt.Errorf("failed to parse nmap XML: %w\n%s", e, stderr)
 	}
+	
 	if len(run.Hosts) == 0 {
 		return Result{Target: target, Findings: nil}, nil
 	}
