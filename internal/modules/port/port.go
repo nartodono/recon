@@ -2,7 +2,6 @@ package port
 
 import (
 	"bytes"
-	"context"
 	"encoding/xml"
 	"fmt"
 	"os/exec"
@@ -43,7 +42,7 @@ func runCmd(name string, args ...string) (stdout string, stderr string, err erro
 	return outBuf.String(), errBuf.String(), err
 }
 
-func Scan(target string, extraArgs []string, timeout time.Duration) (Result, error) {
+func Scan(target string, extraArgs []string) (Result, error)
 	if _, err := exec.LookPath("nmap"); err != nil {
 		return Result{}, fmt.Errorf("nmap not found. Install: sudo apt install nmap")
 	}
