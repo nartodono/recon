@@ -267,21 +267,31 @@ func runPort(args []string) bool {
 		}
 
 		// limits: non-deep = 30, deep = 10
-		maxTargets := 30
+		// maxTargets := 30
 		isDeep := strings.Contains(profile, "deep")
 		if isDeep {
-			maxTargets = 10
+			// maxTargets = 10
 			fmt.Println(Yellow("[!] Deep profile selected in file mode. This may take a long time per target."))
 		}
 
-		if len(targets) > maxTargets {
-			fmt.Printf(Yellow("[!] File contains %d targets. Limiting to first %d targets.\n\n"), len(targets), maxTargets)
-			targets = targets[:maxTargets]
-		}
+		// if len(targets) > maxTargets {
+		// 	fmt.Printf(Yellow("[!] File contains %d targets. Limiting to first %d targets.\n\n"), len(targets), maxTargets)
+		// 	targets = targets[:maxTargets]
+		// }
 
-		timeout := 8 * time.Minute
-		if isDeep {
-			timeout = 25 * time.Minute
+		if len(targets) > 10 {
+			if isDeep {
+				fmt.Printf(Yellow(
+					"[!] %d hosts detected.\n"+
+						"[!] Deep profile is enabled.\n"+
+						"[!] Expect substantially longer execution time.\n\n",
+				), len(targets))
+			} else {
+				fmt.Printf(Yellow(
+					"[!] %d hosts detected.\n"+
+						"[!] Scan time will scale with the number of hosts.\n\n",
+				), len(targets))
+			}
 		}
 
 		totalStart := time.Now()
