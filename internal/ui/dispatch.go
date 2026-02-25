@@ -75,7 +75,7 @@ func runInfo(args []string) bool {
 		return false
 
 	case "web":
-		infoWeb()
+		infoWebservice()
 		return false
 
 	case "smtp":
