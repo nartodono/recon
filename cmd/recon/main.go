@@ -32,5 +32,5 @@ func main() {
 		return
 	}
 
-ui.RunShell()
+	ui.RunShell()
 }
