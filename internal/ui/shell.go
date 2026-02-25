@@ -68,6 +68,17 @@ func RunShell() {
 			readline.PcItem("--json"),
 			readline.PcItem("--txt"),
 		),
+		readline.PcItem("info",
+			readline.PcItem("smb"),
+			readline.PcItem("ssh"),
+			readline.PcItem("snmp"),
+			readline.PcItem("ldap"),
+			readline.PcItem("rdp"),
+			readline.PcItem("web"),
+			readline.PcItem("smtp"),
+			readline.PcItem("mssql"),
+			readline.PcItem("kerberos"),
+		),
 	)
 
 	
