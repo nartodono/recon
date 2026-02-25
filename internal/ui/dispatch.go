@@ -295,20 +295,14 @@ func runPort(args []string) bool {
 		}
 
 		totalStart := time.Now()
-
-		type PortFileItem struct {
-			Target         string             `json:"target"`
-			Findings       []port.PortFinding `json:"findings"`
-			ElapsedSeconds float64            `json:"elapsed_seconds"`
-		}
-		items := []PortFileItem{}
+		items := []export.PortFileItem{}
 
 		for i, t := range targets {
 			start := time.Now()
 			sp := NewSpinner()
 			sp.Start(fmt.Sprintf("[*] Port scan (%s) (%d/%d) %s ...", profile, i+1, len(targets), t))
 
-			res, err := port.Scan(t, extraArgs, timeout)
+			res, err := port.Scan(t, extraArgs)
 
 			sp.Stop()
 			elapsed := time.Since(start)
@@ -324,7 +318,7 @@ func runPort(args []string) bool {
 			RenderPortResult(res)
 			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
 
-			items = append(items, PortFileItem{
+			items = append(items, export.PortFileItem{
 				Target:         t,
 				Findings:       res.Findings,
 				ElapsedSeconds: elapsed.Seconds(),
@@ -367,7 +361,7 @@ func runPort(args []string) bool {
 
 			if wantTXT {
 				p := filepath.Join(dir, export.Filename("port", "txt", now))
-				txt := portFileTXT(items, profile, totalElapsed, now)
+				txt := export.PortFileTXT(items, profile, totalElapsed, now)
 				if e := export.WriteFile(p, []byte(txt)); e != nil {
 					PrintError(e)
 				} else {
@@ -402,9 +396,9 @@ func runPort(args []string) bool {
 		return false
 	}
 
-	timeout := 8 * time.Minute
+	// timeout := 8 * time.Minute
 	if strings.Contains(profile, "deep") {
-		timeout = 25 * time.Minute
+		// timeout = 25 * time.Minute
 		fmt.Println(Yellow("[!] Deep profile selected. This may take a long time..."))
 	}
 
@@ -412,7 +406,7 @@ func runPort(args []string) bool {
 	sp := NewSpinner()
 	sp.Start(fmt.Sprintf("[*] Port scan (%s) %s ...", profile, target))
 
-	res, err := port.Scan(target, extraArgs, timeout)
+	res, err := port.Scan(target, extraArgs)
 
 	sp.Stop()
 	elapsed := time.Since(start)
@@ -458,7 +452,7 @@ func runPort(args []string) bool {
 
 		if wantTXT {
 			p := filepath.Join(dir, export.Filename("port", "txt", now))
-			txt := portSingleTXT(res, profile, elapsed.Seconds(), now)
+		txt := export.PortSingleTXT(res, profile, elapsed.Seconds(), now)
 			if e := export.WriteFile(p, []byte(txt)); e != nil {
 				PrintError(e)
 			} else {
