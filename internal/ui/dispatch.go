@@ -469,97 +469,351 @@ func runPort(args []string) bool {
 // portExtraArgs maps a profile name to nmap arguments (excluding -Pn -oX - <target>).
 func portExtraArgs(profile string) ([]string, bool) {
 	switch profile {
-	case "default":
-		return []string{"-sC", "-sV"}, true
-	case "aggr":
-		return []string{"-A"}, true
-	case "common":
-		return []string{"-sV", "--top-ports", "1000", "--version-light"}, true
-	case "deep":
-		return []string{"-sC", "-sV", "-O", "--traceroute", "--script", "(default or safe or discovery) and not (dos or intrusive or exploit)"}, true
 
-	case "ftp":
-		return []string{"-p", "21", "-sV", "--script=ftp-anon,ftp-syst,ftp-bounce"}, true
-	case "ftp-deep":
-		return []string{"-p", "21", "-sV", "--script=(ftp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "default":
+	return []string{"-sC", "-sV"}, true
 
-	case "ssh":
-		return []string{"-p", "22", "-sV", "--script=ssh-hostkey,ssh2-enum-algos,ssh-auth-methods,banner"}, true
-	case "ssh-deep":
-		return []string{"-p", "22", "-sV", "--script=(ssh-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "aggr":
+	return []string{
+		"-A",
+		"--host-timeout", "10m",
+		"--script-timeout", "90s",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "smtp":
-		return []string{"-p", "25,587", "-sV", "--script=smtp-commands,smtp-enum-users"}, true
-	case "smtp-deep":
-		return []string{"-p", "25,587", "-sV", "--script=(smtp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "common":
+	return []string{
+		"-sV",
+		"--top-ports", "1000",
+		"--version-light",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "dns":
-		return []string{"-p", "53", "-sV", "--script=dns-nsid,dns-recursion"}, true
-	case "dns-deep":
-		return []string{"-p", "53", "-sV", "--script=(dns-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "deep":
 
-	case "web":
-		return []string{"-p", "80,443", "-sV", "--script=http-title,http-headers,http-methods,http-enum,http-server-header"}, true
-	case "web-deep":
-		return []string{"-p", "80,443", "-sV", "--script=(http-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+	return []string{
+		"-sC",
+		"-sV",
+		"--script", "(default or safe or discovery) and not (dos or intrusive or exploit or brute)",
+		"--script-timeout", "90s",
+		"--host-timeout", "10m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "kerberos":
-		return []string{"-p", "88", "-sV", "--script=krb5-enum-users"}, true
-	case "kerberos-deep":
-		return []string{"-p", "88", "-sV", "--script=(krb5-* and not (brute or dos or exploit))"}, true
+case "ftp":
+	return []string{
+		"-p", "21", "-sV",
+		"--script", "ftp-anon,ftp-syst,ftp-bounce",
+		"--script-timeout", "60s",
+		"--host-timeout", "5m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "ftp-deep":
+	return []string{
+		"-p", "21", "-sV",
+		"--script", "(ftp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "8m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "snmp":
-		return []string{"-sU", "-p", "161", "-sV", "--script=snmp-info,snmp-sysdescr,snmp-interfaces"}, true
-	case "snmp-deep":
-		return []string{"-sU", "-p", "161", "-sV", "--script=(snmp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "ssh":
+	return []string{
+		"-p", "22", "-sV",
+		"--script", "ssh-hostkey,ssh2-enum-algos,ssh-auth-methods,banner",
+		"--script-timeout", "60s",
+		"--host-timeout", "5m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "ssh-deep":
+	return []string{
+		"-p", "22", "-sV",
+		"--script", "(ssh-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "8m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "ldap":
-		return []string{"-p", "389", "-sV", "--script=ldap-rootdse,ldap-search"}, true
-	case "ldap-deep":
-		return []string{"-p", "389", "-sV", "--script=(ldap-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "smtp":
+	return []string{
+		"-p", "25,587", "-sV",
+		"--script", "smtp-commands,smtp-enum-users",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "smtp-deep":
+	return []string{
+		"-p", "25,587", "-sV",
+		"--script", "(smtp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "8m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "smb":
-		return []string{"-p", "445", "-sV", "--script=smb-os-discovery,smb2-security-mode,smb2-time,smb-protocols"}, true
-	case "smb-deep":
-		return []string{"-p", "445", "-sV", "--script=(smb-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "dns":
+	return []string{
+		"-p", "53", "-sV",
+		"--script", "dns-nsid,dns-recursion",
+		"--script-timeout", "45s",
+		"--host-timeout", "4m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "dns-deep":
+	return []string{
+		"-p", "53", "-sV",
+		"--script", "(dns-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "mssql":
-		return []string{"-p", "1433", "-sV", "--script=ms-sql-info,ms-sql-ntlm-info"}, true
-	case "mssql-deep":
-		return []string{"-p", "1433", "-sV", "--script=(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "web":
+	return []string{
+		"-p", "80,443", "-sV",
+		"--script", "http-title,http-headers,http-methods,http-enum,http-server-header",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "web-deep":
+	return []string{
+		"-p", "80,443", "-sV",
+		"--script", "(http-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "mysql":
-		return []string{"-p", "3306", "-sV", "--script=mysql-info,mysql-capabilities"}, true
-	case "mysql-deep":
-		return []string{"-p", "3306", "-sV", "--script=(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "kerberos":
+	return []string{
+		"-p", "88", "-sV",
+		"--script", "krb5-enum-users",
+		"--script-timeout", "60s",
+		"--host-timeout", "5m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "kerberos-deep":
+	return []string{
+		"-p", "88", "-sV",
+		"--script", "(krb5-* and (safe or default or discovery)) and not (brute or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "8m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "rdp":
-		return []string{"-p", "3389", "-sV", "--script=rdp-ntlm-info,rdp-enum-encryption"}, true
-	case "rdp-deep":
-		return []string{"-p", "3389", "-sV", "--script=(rdp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "snmp":
+	return []string{
+		"-sU", "-p", "161", "-sV",
+		"--script", "snmp-info,snmp-sysdescr,snmp-interfaces",
+		"--script-timeout", "45s",
+		"--host-timeout", "4m",
+		"--max-retries", "1",
+		"-T4",
+	}, true
+case "snmp-deep":
+	return []string{
+		"-sU", "-p", "161", "-sV",
+		"--script", "(snmp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "60s",
+		"--host-timeout", "5m",
+		"--max-retries", "1",
+		"-T4",
+	}, true
 
-	case "postgresql":
-		return []string{"-p", "5432", "-sV", "--script=pgsql-info"}, true
-	case "postgresql-deep":
-		return []string{"-p", "5432", "-sV", "--script=(pgsql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "ldap":
+	return []string{
+		"-p", "389", "-sV",
+		"--script", "ldap-rootdse,ldap-search",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "ldap-deep":
+	return []string{
+		"-p", "389", "-sV",
+		"--script", "(ldap-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "vnc":
-		return []string{"-p", "5900", "-sV", "--script=vnc-info"}, true
-	case "vnc-deep":
-		return []string{"-p", "5900", "-sV", "--script=(vnc-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "smb":
+	return []string{
+		"-p", "445", "-sV",
+		"--script", "smb-os-discovery,smb2-security-mode,smb2-time,smb-protocols",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "smb-deep":
+	return []string{
+		"-p", "445", "-sV",
+		"--script", "(smb-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "10m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "winrm":
-		return []string{"-p", "5985,5986", "-sV", "--script=wsman-info"}, true
-	case "winrm-deep":
-		return []string{"-p", "5985,5986", "-sV", "--script=(wsman-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)"}, true
+case "mssql":
+	return []string{
+		"-p", "1433", "-sV",
+		"--script", "ms-sql-info,ms-sql-ntlm-info",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "mssql-deep":
+	return []string{
+		"-p", "1433", "-sV",
+		"--script", "(ms-sql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
 
-	case "vuln":
-		return []string{"-sV", "--script=vuln and not (dos or intrusive or exploit)"}, true
-	case "vuln-deep":
-		return []string{"-sV", "--script=(vuln or dos or intrusive or exploit)"}, true
-	default:
-		return nil, false
-	}
+case "mysql":
+	return []string{
+		"-p", "3306", "-sV",
+		"--script", "mysql-info,mysql-capabilities",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "mysql-deep":
+	return []string{
+		"-p", "3306", "-sV",
+		"--script", "(mysql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "rdp":
+	return []string{
+		"-p", "3389", "-sV",
+		"--script", "rdp-ntlm-info,rdp-enum-encryption",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "rdp-deep":
+	return []string{
+		"-p", "3389", "-sV",
+		"--script", "(rdp-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "postgresql":
+	return []string{
+		"-p", "5432", "-sV",
+		"--script", "pgsql-info",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "postgresql-deep":
+	return []string{
+		"-p", "5432", "-sV",
+		"--script", "(pgsql-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "vnc":
+	return []string{
+		"-p", "5900", "-sV",
+		"--script", "vnc-info",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "vnc-deep":
+	return []string{
+		"-p", "5900", "-sV",
+		"--script", "(vnc-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "winrm":
+	return []string{
+		"-p", "5985,5986", "-sV",
+		"--script", "wsman-info",
+		"--script-timeout", "60s",
+		"--host-timeout", "6m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+case "winrm-deep":
+	return []string{
+		"-p", "5985,5986", "-sV",
+		"--script", "(wsman-* and (safe or default or discovery)) and not (brute or intrusive or dos or exploit)",
+		"--script-timeout", "90s",
+		"--host-timeout", "9m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "vuln":
+	// Basic balanced vuln
+	return []string{
+		"-sV",
+		"--version-light",
+		"--script", "vuln",
+		"--host-timeout", "20m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+case "vuln-deep":
+	// Allowed to be longer, but still guardrailed.
+	return []string{
+		"-sV",
+		"--version-light",
+		"--script", "vuln or exploit",
+		"--script-timeout", "3m",
+		"--host-timeout", "30m",
+		"--max-retries", "2",
+		"-T4",
+	}, true
+
+default:
+	return nil, false
+}
 }
 
 // ---------------------------
