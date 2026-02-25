@@ -117,7 +117,7 @@ func infoSmb() {
 }
 
 //SSH
-infoSsh() {
+func infoSsh() {
 	fmt.Println(Cyan("────────────────────────────────────────"))
 	fmt.Println(Cyan("SSH"))
 	fmt.Println(Cyan("────────────────────────────────────────"))
@@ -916,4 +916,5 @@ func infoKerberos(){
 	fmt.Println("    " + Yellow("netexec smb <target> -k -x \"whoami\""))
 
 	fmt.Println(Cyan("────────────────────────────────────────"))
+
 }
