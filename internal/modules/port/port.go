@@ -7,17 +7,17 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
-	"time"
+
 	"github.com/nartodono/recon/internal/system"
 )
 
 type PortFinding struct {
-	Port     int
-	Proto    string
-	State    string
-	Service  string
-	Version  string
-	Scripts  []ScriptFinding
+	Port    int
+	Proto   string
+	State   string
+	Service string
+	Version string
+	Scripts []ScriptFinding
 }
 
 type ScriptFinding struct {
@@ -38,11 +38,10 @@ func runCmd(name string, args ...string) (stdout string, stderr string, err erro
 	cmd.Stderr = &errBuf
 
 	err = cmd.Run()
-
 	return outBuf.String(), errBuf.String(), err
 }
 
-func Scan(target string, extraArgs []string) (Result, error)
+func Scan(target string, extraArgs []string) (Result, error) {
 	if _, err := exec.LookPath("nmap"); err != nil {
 		return Result{}, fmt.Errorf("nmap not found. Install: sudo apt install nmap")
 	}
@@ -66,7 +65,7 @@ func Scan(target string, extraArgs []string) (Result, error)
 	if e := xml.Unmarshal([]byte(stdout), &run); e != nil {
 		return Result{}, fmt.Errorf("failed to parse nmap XML: %w\n%s", e, stderr)
 	}
-	
+
 	if len(run.Hosts) == 0 {
 		return Result{Target: target, Findings: nil}, nil
 	}
