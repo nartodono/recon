@@ -10,7 +10,6 @@ import (
 	"github.com/nartodono/recon/internal/input"
 	"github.com/nartodono/recon/internal/modules/host"
 	"github.com/nartodono/recon/internal/modules/port"
-	"github.com/nartodono/recon/internal/ui"
 )
 
 func RunCommand(cmd string, args []string) bool {
