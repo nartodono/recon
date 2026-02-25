@@ -35,10 +35,6 @@ func Blue(s string) string {
 	return ColorBlue + s + ColorReset
 }
 
-func Magenta(s string) string {
-	return ColorMagenta + s + ColorReset
-}
-
 func White(s string) string {
 	return ColorWhite + s + ColorReset
 }
