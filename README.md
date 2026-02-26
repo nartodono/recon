@@ -24,6 +24,18 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 
 ---
 
+## 🧭 Service Reference (`info <service>`)
+
+Recon provides quick service cheat-sheets to guide what to check, common misconfigurations, and example enumeration commands.
+
+Examples:
+```bash
+recon info smb
+recon info ssh
+```
+
+---
+
 ## Interactive Mode
 
 <p align="center">
@@ -45,17 +57,28 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 - **Two modes**
   - Interactive shell: run commands inside `recon >`
   - CLI shortcut: run directly from terminal
-- **Port profiles** (default/common/deep + service-specific profiles)
+
+- **Port profiles**
+  - Default / common / deep + service-specific profiles
+
+- **Custom port scanning**
+  - Define specific ports manually for targeted scans
+
+- **Flexible multi-target scanning**
+  - Scan multiple targets via `-f <file>` (one IP per line)
+  - No built-in IP/Host scanning limit
+
 - **Structured output**
   - `--txt` pretty human-readable format
   - `--json` machine-readable results
-- **Auto-saves results** to `~/recon_result/` with timestamped filenames
-- **Progress & warnings** (e.g., deep profile in file mode)
-- **Multi-target support** via `-f <file>` (one IP per line)
-- **Custom port scanning**
-  - Define specific ports manually for targeted scans
-- **Unlimited multi-target support**
-  - No built-in IP/Host scanning limit
+  - Auto-saves to `~/recon_result/` with timestamped filenames
+
+- **Service reference (`info <service>`)**
+  - Built-in enumeration checklist & tool examples
+  - Example: `info smb`, `info ssh`
+
+- **Progress & warnings**
+  - Context-aware warnings (e.g., deep profile in file mode)
 
 ---
 
@@ -99,9 +122,10 @@ Start Recon without arguments:
 Inside the shell:
 ```bash
   recon > host 192.168.1.1 --txt --json
-  recon > port 192.168.1.1
-  recon > port web-deep 192.168.1.1 --txt
-  recon > port vuln 192.168.1.1
+  recon > port 192.168.1.1 -p 3306
+  recon > port vuln 192.168.1.1 --txt
+  recon > port ssh-deep -f list.txt
+  recon > info smb
   recon > profile
   recon > exit
 ```
@@ -111,9 +135,11 @@ CLI SHORTCUT MODE
 Run directly from terminal:
 ```bash
   recon host 192.168.1.1 --txt --json
-  recon port smb 192.168.1.20 --txt
+  recon port 192.168.1.1 -p 3306
   recon port web-deep 192.168.1.20 --txt --json
-  recon port vuln-deep 192.168.1.1
+  recon port ssh-deep -f list.txt
+  recon info smb
+  recon list
 ```
 If no profile is specified:
 ```bash
@@ -130,6 +156,18 @@ Scan multiple targets from file (one IP per line):
   recon port -f targets.txt --txt
   recon port deep -f targets.txt --txt --json
 ```
+
+### Custom Port Usage
+
+By default, each service profile uses its standard port.
+You can override it using `-p <port>`.
+
+Example:
+
+```bash
+recon port ftp 192.168.1.10 -p 9109
+```
+
 
 OUTPUT OPTIONS
 --------------
