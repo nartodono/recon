@@ -184,7 +184,7 @@ func SingleHost(target string, wantJSON, wantTXT bool) bool {
 		fmt.Println()
 	}
 
-	return true
+	return false
 }
 
 func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
@@ -276,7 +276,7 @@ func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
 		fmt.Println()
 	}
 
-	return true
+	return false
 }
 
 // ---------------------------
@@ -438,7 +438,7 @@ func SinglePort(profile, target, portOverride string, wantJSON, wantTXT bool) bo
 		fmt.Println()
 	}
 
-	return true
+	return false
 }
 
 func MultiPort(profile, filePath, portOverride string, wantJSON, wantTXT bool) bool {
@@ -566,7 +566,7 @@ func MultiPort(profile, filePath, portOverride string, wantJSON, wantTXT bool) b
 		fmt.Println()
 	}
 
-	return true
+	return false
 }
 
 // ---------------------------
