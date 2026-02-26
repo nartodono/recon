@@ -1,5 +1,10 @@
 package ui
 
+type PortProfile struct {
+	Args         []string
+	DefaultPorts string
+}
+
 var portServices = map[string]struct{}{
 	"default":       {},
 	"aggr":          {},
