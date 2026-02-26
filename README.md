@@ -1,16 +1,16 @@
 # Recon
+Recon is a lightweight CLI tool that runs **profile-based Nmap recon** and produces **clean, structured output** (TXT + JSON).  
+It supports both **interactive shell mode** and **CLI shortcut mode**, with flexible multi-target scanning and custom port support.
+
+> ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
+
+---
+
 ## 🚀 Latest Update – 27 Feb 2026
 - Removed IP/Host limit restriction
 - Added custom port support for port scanning
 
 ➡️ [View all updates](CHANGELOG.md)
-
----
-
-Recon is a lightweight CLI tool that runs **profile-based Nmap recon** and produces **clean, structured output** (TXT + JSON).  
-It supports both **interactive shell mode** and **CLI shortcut mode**, with flexible multi-target scanning and custom port support.
-
-> ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
 ---
 
