@@ -5,6 +5,8 @@
 
 ➡️ [View all updates](CHANGELOG.md)
 
+---
+
 Recon is a lightweight CLI tool that runs **profile-based Nmap recon** and produces **clean, structured output** (TXT + JSON).  
 It supports both **interactive shell mode** and **CLI shortcut mode**, with flexible multi-target scanning and custom port support.
 
