@@ -102,115 +102,30 @@ func runHost(args []string) bool {
 		return false
 	}
 
+	// file mode
 	if args[0] == "-f" {
 		if len(args) != 2 {
 			fmt.Println(Yellow("[!] Usage: host -f <file.txt>\n"))
 			return false
 		}
-
-		targets, err := input.LoadTargetsFromFile(args[1])
-		if err != nil {
-			PrintError(err)
-			return false
-		}
-		if len(targets) == 0 {
-			fmt.Println(Yellow("[!] No targets found in file.\n"))
-			return false
-		}
-
-		counts := HostCounts{}
-		totalStart := time.Now()
-
-		all := []host.Result{}
-
-		for i, t := range targets {
-			start := time.Now()
-			sp := NewSpinner()
-			sp.Start(fmt.Sprintf("[*] Checking (%d/%d) %s ...", i+1, len(targets), t))
-
-			res, err := host.Check(t)
-
-			sp.Stop()
-			elapsed := time.Since(start)
-
-			if err != nil {
-				PrintError(err)
-				continue
-			}
-
-			RenderHostResult(res)
-			all = append(all, res)
-
-			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
-			CountHostStatus(res, &counts)
-		}
-
-		PrintHostSummary(counts)
-		fmt.Printf("Total Time: %.2fs\n\n", time.Since(totalStart).Seconds())
-
-		if wantJSON || wantTXT {
-			dir, derr := export.DefaultDir()
-			if derr != nil {
-				PrintError(derr)
-				return false
-			}
-			if derr := export.EnsureDir(dir); derr != nil {
-				PrintError(derr)
-				return false
-			}
-
-			now := time.Now()
-			totalElapsed := time.Since(totalStart).Seconds()
-
-			jsonPayload := map[string]any{
-				"module":    "host",
-				"timestamp": now.Format(time.RFC3339),
-				"mode":      "file",
-				"results":   all,
-				"summary": map[string]int{
-					"up":      counts.Up,
-					"down":    counts.Down,
-					"unknown": counts.Unknown,
-					"total":   counts.Total,
-				},
-				"elapsed_seconds": totalElapsed,
-			}
-
-			if wantJSON {
-				p := filepath.Join(dir, export.Filename("host", "json", now))
-				if e := export.WriteJSON(p, jsonPayload); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			if wantTXT {
-				p := filepath.Join(dir, export.Filename("host", "txt", now))
-				txt := export.HostFileTXT(all, counts.Up, counts.Down, counts.Unknown, counts.Total, totalElapsed, now)
-				if e := export.WriteFile(p, []byte(txt)); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			fmt.Println()
-		}
-
-		return false
+		return MultiHost(args[1], wantJSON, wantTXT)
 	}
 
+	// single mode
 	if len(args) != 1 {
 		fmt.Println(Yellow("[!] Usage: host <ip-or-hostname>\n"))
 		return false
 	}
 
+	return SingleHost(args[0], wantJSON, wantTXT)
+}
+
+func SingleHost(target string, wantJSON, wantTXT bool) bool {
 	start := time.Now()
 	sp := NewSpinner()
-	sp.Start(fmt.Sprintf("[*] Checking %s ...", args[0]))
+	sp.Start(fmt.Sprintf("[*] Checking %s ...", target))
 
-	res, err := host.Check(args[0])
+	res, err := host.Check(target)
 
 	sp.Stop()
 	elapsed := time.Since(start)
@@ -235,10 +150,10 @@ func runHost(args []string) bool {
 		}
 
 		now := time.Now()
-
 		jsonPayload := map[string]any{
 			"module":          "host",
 			"timestamp":       now.Format(time.RFC3339),
+			"mode":            "single",
 			"target":          res.Target,
 			"result":          res,
 			"elapsed_seconds": elapsed.Seconds(),
@@ -266,7 +181,99 @@ func runHost(args []string) bool {
 		fmt.Println()
 	}
 
-	return false
+	return true
+}
+
+func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
+	targets, err := input.LoadTargetsFromFile(filePath)
+	if err != nil {
+		PrintError(err)
+		return false
+	}
+	if len(targets) == 0 {
+		fmt.Println(Yellow("[!] No targets found in file.\n"))
+		return false
+	}
+
+	counts := HostCounts{}
+	totalStart := time.Now()
+	all := []host.Result{}
+
+	for i, t := range targets {
+		start := time.Now()
+		sp := NewSpinner()
+		sp.Start(fmt.Sprintf("[*] Checking (%d/%d) %s ...", i+1, len(targets), t))
+
+		res, err := host.Check(t)
+
+		sp.Stop()
+		elapsed := time.Since(start)
+
+		if err != nil {
+			PrintError(err)
+			continue
+		}
+
+		RenderHostResult(res)
+		all = append(all, res)
+
+		fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
+		CountHostStatus(res, &counts)
+	}
+
+	PrintHostSummary(counts)
+	totalElapsed := time.Since(totalStart).Seconds()
+	fmt.Printf("Total Time: %.2fs\n\n", totalElapsed)
+
+	if wantJSON || wantTXT {
+		dir, derr := export.DefaultDir()
+		if derr != nil {
+			PrintError(derr)
+			return false
+		}
+		if derr := export.EnsureDir(dir); derr != nil {
+			PrintError(derr)
+			return false
+		}
+
+		now := time.Now()
+		jsonPayload := map[string]any{
+			"module":    "host",
+			"timestamp": now.Format(time.RFC3339),
+			"mode":      "file",
+			"results":   all,
+			"summary": map[string]int{
+				"up":      counts.Up,
+				"down":    counts.Down,
+				"unknown": counts.Unknown,
+				"total":   counts.Total,
+			},
+			"elapsed_seconds": totalElapsed,
+		}
+
+		if wantJSON {
+			p := filepath.Join(dir, export.Filename("host", "json", now))
+			if e := export.WriteJSON(p, jsonPayload); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		if wantTXT {
+			p := filepath.Join(dir, export.Filename("host", "txt", now))
+			txt := export.HostFileTXT(all, counts.Up, counts.Down, counts.Unknown, counts.Total, totalElapsed, now)
+			if e := export.WriteFile(p, []byte(txt)); e != nil {
+				PrintError(e)
+			} else {
+				PrintSaved(p)
+			}
+		}
+
+		fmt.Println()
+	}
+
+	return true
 }
 
 // ---------------------------
