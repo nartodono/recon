@@ -1,8 +1,12 @@
 # Recon
 **Profile-based Nmap reconnaissance with clean, structured TXT + JSON output.**
 
-Recon is a lightweight CLI tool designed for flexible, profile-driven scanning.
+Recon is a lightweight CLI tool designed to simplify Nmap usage through profile-driven scanning.
+It abstracts complex Nmap scripts, improves output readability, and provides built-in service references to support practical penetration testing workflows.
+
 It supports interactive shell and CLI shortcut mode, custom port overrides, and multi-target execution.
+
+Recon focuses on structured output, reproducible scans, and practical operator workflows.
 
 > ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
