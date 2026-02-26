@@ -40,7 +40,7 @@ var portServices = map[string]struct{}{
 }
 
 // portProfile maps a profile name to nmap arguments (excluding -Pn -oX - <target>).
-var portProfile map[string]PortProfile {
+var portProfile = map[string]PortProfile {
 	"default":      {Args: []string{
 								"-sC",
 								"-sV"
