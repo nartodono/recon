@@ -17,7 +17,7 @@ func PrintBanner() {
 	fmt.Printf("  %s          - Show available port profiles\n", Cyan("profile | list"))
 	fmt.Printf("  %s          - Show enumeration reference\n", Cyan("info <service>"))
 	fmt.Printf("  %s                - Show commands\n", Cyan("help | ?"))
-	fmt.Printf("  %s              - Clear screen\n", Cyan("clear | cls"))
+	fmt.Printf("  %s             - Clear screen\n", Cyan("clear | cls"))
 	fmt.Printf("  %s         - Exit Recon\n", Cyan("exit | quit | q"))
 	fmt.Println()
 }
