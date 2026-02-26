@@ -1,8 +1,8 @@
 # Recon
 **Profile-based Nmap reconnaissance with clean, structured TXT + JSON output.**
 
-Recon is a lightweight CLI tool that runs **profile-based Nmap recon** and produces **clean, structured output** (TXT + JSON).  
-It supports both **interactive shell mode** and **CLI shortcut mode**, with flexible multi-target scanning and custom port support.
+Recon is a lightweight CLI tool designed for flexible, profile-driven scanning.
+It supports interactive shell and CLI shortcut mode, custom port overrides, and multi-target execution.
 
 > ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
@@ -99,10 +99,21 @@ cd recon
 go build ./cmd/recon
 ```
 
+---
+
+## Quick Start
+
+```bash
+recon host 192.168.1.1 --txt
+recon port ssh-deep 192.168.1.1 --json
+recon info smb
+```
+
+---
+
 ## Tools Usage
 
-INTERACTIVE MODE
-----------------
+### Interactive Mode
 Start Recon without arguments:
 ```bash
   recon
@@ -118,8 +129,7 @@ Inside the shell:
   recon > exit
 ```
 
-CLI SHORTCUT MODE
------------------
+### CLI Shortcut Mode
 Run directly from terminal:
 ```bash
   recon host 192.168.1.1 --txt --json
@@ -135,16 +145,6 @@ If no profile is specified:
 ```
 The 'default' profile will be used automatically.
 
-
-FILE MODE
----------
-Scan multiple targets from file (one IP per line):
-```bash
-  recon host -f targets.txt --txt --json
-  recon port -f targets.txt --txt
-  recon port deep -f targets.txt --txt --json
-```
-
 ### Custom Port Usage
 
 By default, each service profile uses its standard port.
@@ -156,9 +156,17 @@ Example:
 recon port ftp 192.168.1.10 -p 9109
 ```
 
----
+This allows scanning a service profile on a non-standard port.
 
-## 🧭 Service Reference (`info <service>`)
+### File Mode
+Scan multiple targets from file (one IP per line):
+```bash
+  recon host -f targets.txt --txt --json
+  recon port -f targets.txt --txt
+  recon port deep -f targets.txt --txt --json
+```
+
+### 🧭 Service Reference (`info <service>`)
 
 Recon provides quick service cheat-sheets to guide what to check, common misconfigurations, and example enumeration commands.
 
@@ -170,16 +178,15 @@ recon info ssh
 
 ---
 
-OUTPUT OPTIONS
---------------
+### Output Options
   `--txt`   Print formatted text output
   `--json`  Print structured JSON output
 
 Both flags can be used together.
 
+---
 
-NOTES
------
+## Notes
 - Results are automatically saved to:
     ~/recon_result/
 
@@ -189,9 +196,9 @@ NOTES
     `recon-port-YYYYMMDD-HHMMSS.txt`
     `recon-port-YYYYMMDD-HHMMSS.json`
 
-- Recon checks required dependencies on startup:
-    nmap
-    ping
+- Recon validates required dependencies on startup (`nmap`, `ping`)
+
+---
 
 ## Example
 
