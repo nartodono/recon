@@ -289,7 +289,7 @@ func runPort(args []string) bool {
 	}
 
 	service := "default"
-	if (args[0] == "smb) {
+	if (args[0] == "smb") {
 		service = args[0]
 		args = args[1:]
 	}
