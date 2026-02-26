@@ -505,7 +505,7 @@ func infoRdp(){
 }
 
 // Web-svc
-func infoWebservice(){
+func infoWebService(){
 	fmt.Println(Cyan("────────────────────────────────────────"))
 	fmt.Println(Cyan("WEB (HTTP/HTTPS)"))
 	fmt.Println(Cyan("────────────────────────────────────────"))
@@ -918,3 +918,4 @@ func infoKerberos(){
 	fmt.Println(Cyan("────────────────────────────────────────"))
 
 }
+
