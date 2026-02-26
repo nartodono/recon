@@ -36,17 +36,17 @@ var portServices = map[string]struct{}{
 	"rdp-deep":      {},
 
 	// keep backward compatibility: accept both postgres & postgresql
-	"postgres":          {},
-	"postgres-deep":     {},
-	"postgresql":        {},
-	"postgresql-deep":   {},
+	"postgres":        {},
+	"postgres-deep":   {},
+	"postgresql":      {},
+	"postgresql-deep": {},
 
-	"vnc":           {},
-	"vnc-deep":      {},
-	"winrm":         {},
-	"winrm-deep":    {},
-	"vuln":          {},
-	"vuln-deep":     {},
+	"vnc":        {},
+	"vnc-deep":   {},
+	"winrm":      {},
+	"winrm-deep": {},
+	"vuln":       {},
+	"vuln-deep":  {},
 }
 
 // portProfile maps a profile name to nmap arguments (excluding -Pn -oX - <target>).
@@ -375,4 +375,14 @@ var portProfile = map[string]PortProfile{
 func isPortService(s string) bool {
 	_, ok := portServices[s]
 	return ok
+}
+
+func portExtraArgs(profile string) ([]string, string, bool) {
+	p, ok := portProfile[profile]
+	if !ok {
+		return nil, "", false
+	}
+	// Return a copy to avoid accidental mutation by callers.
+	args := append([]string{}, p.Args...)
+	return args, p.DefaultPorts, true
 }
