@@ -1,7 +1,12 @@
 # Recon
+## 🚀 Latest Update – 27 Feb 2026
+- Removed IP/Host limit restriction
+- Added custom port support for port scanning
+
+➡️ [View all updates](CHANGELOG.md)
 
 Recon is a lightweight CLI tool that runs **profile-based Nmap recon** and produces **clean, structured output** (TXT + JSON).  
-It supports both **interactive shell mode** and **CLI shortcut mode**, with built-in safety limits for multi-target scanning.
+It supports both **interactive shell mode** and **CLI shortcut mode**, with flexible multi-target scanning and custom port support.
 
 > ⚠️ Use responsibly. Only scan systems you own or have explicit permission to test.
 
@@ -43,6 +48,10 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 - **Auto-saves results** to `~/recon_result/` with timestamped filenames
 - **Progress & warnings** (e.g., deep profile in file mode)
 - **Multi-target support** via `-f <file>` (one IP per line)
+- **Custom port scanning**
+  - Define specific ports manually for targeted scans
+- **Unlimited multi-target support**
+  - No built-in IP/Host scanning limit
 
 ---
 
@@ -136,10 +145,6 @@ NOTES
     `recon-host-YYYYMMDD-HHMMSS.json`
     `recon-port-YYYYMMDD-HHMMSS.txt
     `recon-port-YYYYMMDD-HHMMSS.json
-
-- Multi-target limits:
-    Normal profiles  → max 30 targets
-    Deep profiles    → max 10 targets
 
 - Recon checks required dependencies on startup:
     nmap
