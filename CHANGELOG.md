@@ -6,6 +6,8 @@
 
 **27 Feb 2026**
 
+---
+
 ### Added
 - Custom port support for port scanning
 
