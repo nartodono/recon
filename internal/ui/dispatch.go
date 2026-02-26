@@ -278,7 +278,7 @@ func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
 
 // ---------------------------
 // PORT
-func runPort(args [string]) bool {
+func runPort(args []string) bool {
 	args, wantJSON, wantTXT := parseExportFlags(args)
 	_ = wantJSON
 	_ = wantTXT
