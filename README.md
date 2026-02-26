@@ -24,18 +24,6 @@ For a complete and detailed list of available port profiles and their Nmap mappi
 
 ---
 
-## 🧭 Service Reference (`info <service>`)
-
-Recon provides quick service cheat-sheets to guide what to check, common misconfigurations, and example enumeration commands.
-
-Examples:
-```bash
-recon info smb
-recon info ssh
-```
-
----
-
 ## Interactive Mode
 
 <p align="center">
@@ -168,6 +156,19 @@ Example:
 recon port ftp 192.168.1.10 -p 9109
 ```
 
+---
+
+### 🧭 Service Reference (`info <service>`)
+
+Recon provides quick service cheat-sheets to guide what to check, common misconfigurations, and example enumeration commands.
+
+Examples:
+```bash
+recon info smb
+recon info ssh
+```
+
+---
 
 OUTPUT OPTIONS
 --------------
@@ -185,8 +186,8 @@ NOTES
 - Output filenames follow:
     `recon-host-YYYYMMDD-HHMMSS.txt`
     `recon-host-YYYYMMDD-HHMMSS.json`
-    `recon-port-YYYYMMDD-HHMMSS.txt
-    `recon-port-YYYYMMDD-HHMMSS.json
+    `recon-port-YYYYMMDD-HHMMSS.txt`
+    `recon-port-YYYYMMDD-HHMMSS.json`
 
 - Recon checks required dependencies on startup:
     nmap
