@@ -12,15 +12,14 @@ func PrintBanner() {
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
 ` + ColorReset)
 	// fmt.Println()
-
-	fmt.Printf("  %-22s - %s\n", Green("host <ip>"), "Host status (ping + discovery scan)")
-  fmt.Printf("  %-22s - %s\n", Green("port <profile> <ip>"), "Run port scan profile")
-  fmt.Printf("  %-22s - %s\n", Cyan("profile | list"), "Show available port profiles")
-  fmt.Printf("  %-22s - %s\n", Cyan("info <service>"), "Show enumeration reference")
-  fmt.Printf("  %-22s - %s\n", Cyan("help | ?"), "Show commands")
-  fmt.Printf("  %-22s - %s\n", Cyan("clear | cls"), "Clear screen")
-  fmt.Printf("  %-22s - %s\n", Cyan("exit | quit | q"), "Exit Recon")
-  fmt.Println()
+	fmt.Printf("  %s               - Host status (ping + discovery scan)\n", Green("host <ip>"))
+	fmt.Printf("  %s     - Run port scan profile\n", Green("port <profile> <ip>"))
+	fmt.Printf("  %s          - Show available port profiles\n", Cyan("profile | list"))
+	fmt.Printf("  %s          - Show enumeration reference\n", Cyan("info <service>"))
+	fmt.Printf("  %s                - Show commands\n", Cyan("help | ?"))
+	fmt.Printf("  %s              - Clear screen\n", Cyan("clear | cls"))
+	fmt.Printf("  %s         - Exit Recon\n", Cyan("exit | quit | q"))
+	fmt.Println()
 }
 
 func PrintBannerHelp() {
