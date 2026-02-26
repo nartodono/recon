@@ -278,247 +278,73 @@ func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
 
 // ---------------------------
 // PORT
-func runPort(args []string) bool {
+func runPort(args [string]) bool {
 	args, wantJSON, wantTXT := parseExportFlags(args)
+	_ = wantJSON
+	_ = wantTXT
 
 	if len(args) == 0 {
-		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>  OR  port -f <file.txt>  OR  port <profile> -f <file.txt>\n"))
+		fmt.Println(Yellow("[!] Usage: port (service) <ip/host> (-f <file>) (-p <ports>)\n"))
 		return false
 	}
 
-	// ---------------------------
-	// FILE MODE
-	//   port -f <file>
-	//   port <profile> -f <file>
-	profile := "default"
-	filePath := ""
-
-	if args[0] == "-f" {
-		if len(args) != 2 {
-			fmt.Println(Yellow("[!] Usage: port -f <file.txt>\n"))
-			return false
-		}
-		filePath = args[1]
-	} else if len(args) == 3 && args[1] == "-f" {
-		profile = args[0]
-		filePath = args[2]
+	service := "default"
+	if isPortService(args[0]) {
+		service = args[0]
+		args = args[1:]
 	}
 
-	if filePath != "" {
-		targets, err := input.LoadTargetsFromFile(filePath)
-		if err != nil {
-			PrintError(err)
-			return false
-		}
-		if len(targets) == 0 {
-			fmt.Println(Yellow("[!] No targets found in file.\n"))
-			return false
-		}
+	var (
+		target string
+		file   string
+		ports  string
+	)
 
-		extraArgs, ok := portExtraArgs(profile)
-		if !ok {
-			fmt.Println(Yellow("[!] Unknown port profile. Type 'help' to see available commands.\n"))
-			return false
-		}
-
-		// limits: non-deep = 30, deep = 10
-		// maxTargets := 30
-		isDeep := strings.Contains(profile, "deep")
-		if isDeep {
-			// maxTargets = 10
-			fmt.Println(Yellow("[!] Deep profile selected in file mode. This may take a long time per target."))
-		}
-
-		// if len(targets) > maxTargets {
-		// 	fmt.Printf(Yellow("[!] File contains %d targets. Limiting to first %d targets.\n\n"), len(targets), maxTargets)
-		// 	targets = targets[:maxTargets]
-		// }
-
-		if len(targets) > 10 {
-			if isDeep {
-				fmt.Printf(Yellow(
-					"[!] %d hosts detected.\n"+
-						"[!] Deep profile is enabled.\n"+
-						"[!] Expect substantially longer execution time.\n\n",
-				), len(targets))
-			} else {
-				fmt.Printf(Yellow(
-					"[!] %d hosts detected.\n"+
-						"[!] Scan time will scale with the number of hosts.\n\n",
-				), len(targets))
-			}
-		}
-
-		totalStart := time.Now()
-		items := []export.PortFileItem{}
-
-		for i, t := range targets {
-			start := time.Now()
-			sp := NewSpinner()
-			sp.Start(fmt.Sprintf("[*] Port scan (%s) (%d/%d) %s ...", profile, i+1, len(targets), t))
-
-			res, err := port.Scan(t, extraArgs)
-
-			sp.Stop()
-			elapsed := time.Since(start)
-
-			if err != nil {
-				PrintError(err)
-				continue
-			}
-
-			fmt.Println(Cyan("========================================"))
-			fmt.Printf(Cyan("Target: %s\n\n"), t)
-
-			RenderPortResult(res)
-			fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
-
-			items = append(items, export.PortFileItem{
-				Target:         t,
-				Findings:       res.Findings,
-				ElapsedSeconds: elapsed.Seconds(),
-			})
-		}
-
-		fmt.Printf(Green("All scans completed in %.2fs\n\n"), time.Since(totalStart).Seconds())
-
-		if wantJSON || wantTXT {
-			dir, derr := export.DefaultDir()
-			if derr != nil {
-				PrintError(derr)
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "-f":
+			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "-") {
+				fmt.Println(Yellow("[!] Usage: port ... -f <file>\n"))
 				return false
 			}
-			if derr := export.EnsureDir(dir); derr != nil {
-				PrintError(derr)
+			file = args[i+1]
+			i++
+
+		case "-p":
+			if i+1 >= len(args) || strings.HasPrefix(args[i+1], "-") {
+				fmt.Println(Yellow("[!] Usage: port ... -p <ports>\n"))
 				return false
 			}
+			ports = args[i+1]
+			i++
 
-			now := time.Now()
-			totalElapsed := time.Since(totalStart).Seconds()
-
-			jsonPayload := map[string]any{
-				"module":          "port",
-				"timestamp":       now.Format(time.RFC3339),
-				"mode":            "file",
-				"profile":         profile,
-				"results":         items,
-				"elapsed_seconds": totalElapsed,
+		default:
+			if strings.HasPrefix(args[i], "-") {
+				fmt.Println(Yellow("[!] Unknown flag: " + args[i] + "\n"))
+				return false
 			}
-
-			if wantJSON {
-				p := filepath.Join(dir, export.Filename("port", "json", now))
-				if e := export.WriteJSON(p, jsonPayload); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			if wantTXT {
-				p := filepath.Join(dir, export.Filename("port", "txt", now))
-				txt := export.PortFileTXT(items, profile, totalElapsed, now)
-				if e := export.WriteFile(p, []byte(txt)); e != nil {
-					PrintError(e)
-				} else {
-					PrintSaved(p)
-				}
-			}
-
-			fmt.Println()
-		}
-
-		return false
-	}
-
-	// ---------------------------
-	// SINGLE MODE
-	//   port <ip>
-	//   port <profile> <ip>
-	target := ""
-	if len(args) == 1 {
-		target = args[0]
-	} else if len(args) == 2 {
-		profile = args[0]
-		target = args[1]
-	} else {
-		fmt.Println(Yellow("[!] Usage: port <ip/hostname>  OR  port <profile> <ip/hostname>\n"))
-		return false
-	}
-
-	extraArgs, ok := portExtraArgs(profile)
-	if !ok {
-		fmt.Println(Yellow("[!] Unknown port profile.\n"))
-		return false
-	}
-
-	// timeout := 8 * time.Minute
-	if strings.Contains(profile, "deep") {
-		// timeout = 25 * time.Minute
-		fmt.Println(Yellow("[!] Deep profile selected. This may take a long time..."))
-	}
-
-	start := time.Now()
-	sp := NewSpinner()
-	sp.Start(fmt.Sprintf("[*] Port scan (%s) %s ...", profile, target))
-
-	res, err := port.Scan(target, extraArgs)
-
-	sp.Stop()
-	elapsed := time.Since(start)
-
-	if err != nil {
-		PrintError(err)
-		return false
-	}
-
-	RenderPortResult(res)
-	fmt.Printf("    Time  : %.2fs\n\n", elapsed.Seconds())
-
-	if wantJSON || wantTXT {
-		dir, derr := export.DefaultDir()
-		if derr != nil {
-			PrintError(derr)
-			return false
-		}
-		if derr := export.EnsureDir(dir); derr != nil {
-			PrintError(derr)
-			return false
-		}
-
-		now := time.Now()
-
-		jsonPayload := map[string]any{
-			"module":          "port",
-			"timestamp":       now.Format(time.RFC3339),
-			"target":          res.Target,
-			"profile":         profile,
-			"result":          res,
-			"elapsed_seconds": elapsed.Seconds(),
-		}
-
-		if wantJSON {
-			p := filepath.Join(dir, export.Filename("port", "json", now))
-			if e := export.WriteJSON(p, jsonPayload); e != nil {
-				PrintError(e)
+			if target == "" {
+				target = args[i]
 			} else {
-				PrintSaved(p)
+				fmt.Println(Yellow("[!] Unexpected argument: " + args[i] + "\n"))
+				return false
 			}
 		}
-
-		if wantTXT {
-			p := filepath.Join(dir, export.Filename("port", "txt", now))
-		txt := export.PortSingleTXT(res, profile, elapsed.Seconds(), now)
-			if e := export.WriteFile(p, []byte(txt)); e != nil {
-				PrintError(e)
-			} else {
-				PrintSaved(p)
-			}
-		}
-
-		fmt.Println()
+	}
+	
+	if target == "" {
+		fmt.Println(Yellow("[!] Usage: port (service) <ip/host> (-f <file>) (-p <ports>)\n"))
+		return false
 	}
 
-	return false
+	// sementara buat cek hasil parse
+	fmt.Println("service:", service)
+	fmt.Println("target :", target)
+	fmt.Println("file   :", file)
+	fmt.Println("ports  :", ports)
+
+	return true
+	
 }
 
 // portExtraArgs maps a profile name to nmap arguments (excluding -Pn -oX - <target>).
