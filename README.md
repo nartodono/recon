@@ -158,7 +158,7 @@ recon port ftp 192.168.1.10 -p 9109
 
 ---
 
-### 🧭 Service Reference (`info <service>`)
+## 🧭 Service Reference (`info <service>`)
 
 Recon provides quick service cheat-sheets to guide what to check, common misconfigurations, and example enumeration commands.
 
