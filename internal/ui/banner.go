@@ -13,13 +13,14 @@ func PrintBanner() {
 ` + ColorReset)
 	// fmt.Println()
 
-	fmt.Println("  " + Green("host") + " <ip>            - Host status (ping + nmap)")
-	fmt.Println("  " + Green("port") + " <ip>            - Port checker (nmap)")
-	fmt.Println("  " + Cyan("profile  / list") + "      - Show Port Profile Lists")
-	fmt.Println("  " + Cyan("help / ?") + "             - Show commands")
-	fmt.Println("  " + Cyan("clear / cls") + "          - Clear screen")
-	fmt.Println("  " + Cyan("exi / q t") + "            - Quit")
-	fmt.Println()
+	fmt.Printf("  %-22s - %s\n", Green("host <ip>"), "Host status (ping + discovery scan)")
+  fmt.Printf("  %-22s - %s\n", Green("port <profile> <ip>"), "Run port scan profile")
+  fmt.Printf("  %-22s - %s\n", Cyan("profile | list"), "Show available port profiles")
+  fmt.Printf("  %-22s - %s\n", Cyan("info <service>"), "Show enumeration reference")
+  fmt.Printf("  %-22s - %s\n", Cyan("help | ?"), "Show commands")
+  fmt.Printf("  %-22s - %s\n", Cyan("clear | cls"), "Clear screen")
+  fmt.Printf("  %-22s - %s\n", Cyan("exit | quit | q"), "Exit Recon")
+  fmt.Println()
 }
 
 func PrintBannerHelp() {
@@ -31,48 +32,59 @@ Recon supports two modes:
 ────────────────────────────────────────
 Launch Recon without arguments to enter interactive mode
 
-Available commands inside the shell:
+Available commands:
 
   host <ip>
-      Check host status (ping + nmap -sn)
+      Check host availability (ping + discovery scan)
 
-  port <profile> <ip>
-      Run a specific port profile against a target
+  port <profile> <ip> [-p <port>]
+      Run port scan profile against a target
 
-  profile / list
-      Show available port scanning profile
+  profile | list
+      Show available port profiles
 
-  help / ?
-      Show help information
+  info <service>
+      Show enumeration & attack reference
 
-  clear / cls
-      Clear the screen
+  help | ?
+      Show this help message
 
-  exit / quit / q
+  clear | cls
+      Clear screen
+
+  exit | quit | q
       Exit Recon
 
 
 ────────────────────────────────────────
 2) CLI SHORTCUT MODE
 ────────────────────────────────────────
-Run Recon directly from the terminal without entering
-interactive mode.
-
-General syntax:
+Run directly from terminal:
 
   recon host <ip> [--txt] [--json]
   recon host -f <file> [--txt] [--json]
 
   recon port <profile> <ip> [--txt] [--json]
+  recon port <profile> <ip> -p <port> [--txt] [--json]
   recon port <profile> -f <file> [--txt] [--json]
 
+  recon info <service>
+
 
 ────────────────────────────────────────
-FILES
+PORT OPTIONS
+────────────────────────────────────────
+  -p <port>
+      Override default profile port
+      Example: -p 8080 or -p 80,443
+
+
+────────────────────────────────────────
+FILE INPUT
 ────────────────────────────────────────
   -f <file>
-      Provide a file containing a list of IP addresses
-      (one IP per line)
+      Scan multiple targets from file
+      Format: one IP per line
 
 
 ────────────────────────────────────────
@@ -82,7 +94,7 @@ OUTPUT OPTIONS
       Print formatted text output
 
   --json
-      Print JSON output
+      Print structured JSON output
 
 Both --txt and --json can be used together.
 
@@ -90,30 +102,36 @@ Both --txt and --json can be used together.
 ────────────────────────────────────────
 PORT PROFILES
 ────────────────────────────────────────
-Standard and Deep variants are available:
-  default
-  common / deep
-  ftp / ftp-deep
-  ssh / ssh-deep
-  smtp / smtp-deep
-  dns / dns-deep
-  web / web-deep
-  kerberos / kerberos-deep
-  snmp / snmp-deep
-  ldap / ldap-deep
-  smb / smb-deep
-  mssql / mssql-deep
-  mysql / mysql-deep
-  postgresql / postgresql-deep
-  rdp / rdp-deep
-  vnc / vnc-deep
-  winrm / winrm-deep
 
-Vulnerability modes:
-  vuln          Safe vulnerability checks
-  vuln-deep     Aggressive checks (may include intrusive/DoS)
+Standard & Deep Profiles
+────────────────────────────────────────
+  default        | aggr
+  common         | deep
+  ftp            | ftp-deep
+  ssh            | ssh-deep
+  smtp           | smtp-deep
+  dns            | dns-deep
+  web            | web-deep
+  kerberos       | kerberos-deep
+  snmp           | snmp-deep
+  ldap           | ldap-deep
+  smb            | smb-deep
+  mssql          | mssql-deep
+  mysql          | mysql-deep
+  postgresql     | postgresql-deep
+  rdp            | rdp-deep
+  vnc            | vnc-deep
+  winrm          | winrm-deep
 
-If no port profile is specified, the default mode will be used.
+
+Vulnerability Modes
+────────────────────────────────────────
+  vuln        - Safe vulnerability checks
+  vuln-deep   - Aggressive checks (may include intrusive/DoS)
+
+
+Note:
+If no profile is specified, "default" mode will be used.
 
 
 ────────────────────────────────────────
@@ -153,24 +171,38 @@ func PrintHelp() {
 ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝ ╚═╝  ╚═══╝
 ` + ColorReset)
 
-	fmt.Println(`
-General syntax:
+fmt.Println(`
+GENERAL SYNTAX
+────────────────────────────────────────
 
+Host scan:
   recon host <ip> [--txt] [--json]
   recon host -f <file> [--txt] [--json]
 
-  recon port <profile> <ip> [--txt] [--json]
+Port scan:
+  recon port <profile> <ip> [-p <port>] [--txt] [--json]
   recon port <profile> -f <file> [--txt] [--json]
 
+Service reference:
+  recon info <service>
 
-Use interactive shell mode:
+Profile list:
+  recon profile
+  recon list
 
+
+INTERACTIVE MODE
+────────────────────────────────────────
   recon
 
 
-View Port Scanning Profile Lists:
+OPTIONS
+────────────────────────────────────────
+  -p <port>    Override default profile port
+  -f <file>    Scan multiple targets (one IP per line)
 
-  recon profile / recon list
+  --txt        Print formatted text output
+  --json       Print structured JSON output
 `)
 }
 
@@ -179,29 +211,35 @@ func PrintProfile() {
 ────────────────────────────────────────
 PORT PROFILES
 ────────────────────────────────────────
-Standard and Deep variants are available:
-  default
-  common / deep
-  ftp / ftp-deep
-  ssh / ssh-deep
-  smtp / smtp-deep
-  dns / dns-deep
-  web / web-deep
-  kerberos / kerberos-deep
-  snmp / snmp-deep
-  ldap / ldap-deep
-  smb / smb-deep
-  mssql / mssql-deep
-  mysql / mysql-deep
-  postgresql / postgresql-deep
-  rdp / rdp-deep
-  vnc / vnc-deep
-  winrm / winrm-deep
 
-Vulnerability modes:
-  vuln          Safe vulnerability checks
-  vuln-deep     Aggressive checks (may include intrusive/DoS)
+Standard & Deep Profiles
+────────────────────────────────────────
+  default        | aggr
+  common         | deep
+  ftp            | ftp-deep
+  ssh            | ssh-deep
+  smtp           | smtp-deep
+  dns            | dns-deep
+  web            | web-deep
+  kerberos       | kerberos-deep
+  snmp           | snmp-deep
+  ldap           | ldap-deep
+  smb            | smb-deep
+  mssql          | mssql-deep
+  mysql          | mysql-deep
+  postgresql     | postgresql-deep
+  rdp            | rdp-deep
+  vnc            | vnc-deep
+  winrm          | winrm-deep
 
-If no port profile is specified, the default mode will be used.
+
+Vulnerability Modes
+────────────────────────────────────────
+  vuln        - Safe vulnerability checks
+  vuln-deep   - Aggressive checks (may include intrusive/DoS)
+
+
+Note:
+If no profile is specified, "default" mode will be used.
 `)
 }
