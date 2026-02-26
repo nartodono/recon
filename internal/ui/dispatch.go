@@ -278,7 +278,7 @@ func MultiHost(filePath string, wantJSON, wantTXT bool) bool {
 
 // ---------------------------
 // PORT
-func runPort(args [string]) bool {
+func runPort(args []string) bool {
 	args, wantJSON, wantTXT := parseExportFlags(args)
 	_ = wantJSON
 	_ = wantTXT
@@ -289,7 +289,7 @@ func runPort(args [string]) bool {
 	}
 
 	service := "default"
-	if isPortService(args[0]) {
+	if (args[0] == "smb) {
 		service = args[0]
 		args = args[1:]
 	}
