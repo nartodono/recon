@@ -3,22 +3,28 @@ package port
 import "encoding/xml"
 
 type NmapRun struct {
-	XMLName xml.Name `xml:"nmaprun"`
-	Hosts   []Host   `xml:"host"`
-	RunStats RunStats `xml:"runstats"`
+	XMLName   xml.Name `xml:"nmaprun"`
+	Hosts     []Host   `xml:"host"`
+	RunStats  RunStats `xml:"runstats"`
 }
 
 type RunStats struct {
-    Finished Finished `xml:"finished"`
+	Finished Finished `xml:"finished"`
 }
 
 type Finished struct {
-    Exit string `xml:"exit,attr"`
+	Exit string `xml:"exit,attr"`
 }
 
 type Host struct {
-	Addresses []Address `xml:"address"`
-	Ports     Ports     `xml:"ports"`
+	Status    HostStatus `xml:"status"`
+	Addresses []Address  `xml:"address"`
+	Ports     Ports      `xml:"ports"`
+}
+
+type HostStatus struct {
+	State  string `xml:"state,attr"`
+	Reason string `xml:"reason,attr,omitempty"`
 }
 
 type Address struct {
@@ -31,22 +37,22 @@ type Ports struct {
 	ExtraPorts []ExtraPort `xml:"extraports"`
 }
 
-type Port struct {
-	Protocol string `xml:"protocol,attr"`
-	PortID   int    `xml:"portid,attr"`
-	State    State  `xml:"state"`
-	Service  Service `xml:"service"`
-	Scripts  []Script `xml:"script"`
-}
-
 type ExtraPort struct {
 	State  string `xml:"state,attr"`
 	Count  int    `xml:"count,attr"`
-	Reason string `xml:"reason,attr"`
+	Reason string `xml:"reason,attr,omitempty"`
+}
+
+type Port struct {
+	Protocol string   `xml:"protocol,attr"`
+	PortID   int      `xml:"portid,attr"`
+	State    State    `xml:"state"`
+	Service  Service  `xml:"service"`
+	Scripts  []Script `xml:"script"`
 }
 
 type State struct {
-	State string `xml:"state,attr"`
+	State  string `xml:"state,attr"`
 	Reason string `xml:"reason,attr,omitempty"`
 }
 
