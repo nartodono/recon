@@ -575,6 +575,7 @@ type portFileItemForTXT struct {
 	Target         string
 	Findings       []port.PortFinding
 	ElapsedSeconds float64
+	Warning        string
 }
 
 func portSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time.Time) string {
@@ -582,7 +583,12 @@ func portSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time
 	sb.WriteString("=== recon port ===\n")
 	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
 	sb.WriteString(fmt.Sprintf("Target  : %s\n", r.Target))
-	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
+	sb.WriteString(fmt.Sprintf("Profile : %s\n", profile))
+
+	if strings.TrimSpace(r.Warning) != "" {
+		sb.WriteString(fmt.Sprintf("Warning : %s\n", r.Warning))
+	}
+	sb.WriteString("\n")
 
 	sb.WriteString(renderPortFindingsTXT(r.Findings))
 	sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", elapsedSeconds))
@@ -603,6 +609,7 @@ func portFileTXT(items any, profile string, totalElapsedSeconds float64, t time.
 				Target:         it.Target,
 				Findings:       it.Findings,
 				ElapsedSeconds: it.ElapsedSeconds,
+				Warning:        it.Warning,
 			})
 		}
 	default:
@@ -613,11 +620,22 @@ func portFileTXT(items any, profile string, totalElapsedSeconds float64, t time.
 	sb.WriteString("=== recon port ===\n")
 	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
 	sb.WriteString("Mode    : file\n")
-	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
+	sb.WriteString(fmt.Sprintf("Profile : %s\n", profile))
+
+	if strings.TrimSpace(r.Warning) != "" {
+		sb.WriteString(fmt.Sprintf("Warning : %s\n", r.Warning))
+	}
+	sb.WriteString("\n")
 
 	for _, it := range typed {
 		sb.WriteString("========================================\n")
-		sb.WriteString(fmt.Sprintf("Target: %s\n\n", it.Target))
+		sb.WriteString(fmt.Sprintf("Target: %s\n", it.Target))
+
+		if strings.TrimSpace(it.Warning) != "" {
+			sb.WriteString(fmt.Sprintf("Warning: %s\n", it.Warning))
+		}
+		sb.WriteString("\n")
+		
 		sb.WriteString(renderPortFindingsTXT(it.Findings))
 		sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", it.ElapsedSeconds))
 	}
