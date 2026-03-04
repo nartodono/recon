@@ -585,11 +585,19 @@ func portSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time
 	sb.WriteString(fmt.Sprintf("Target  : %s\n", r.Target))
 	sb.WriteString(fmt.Sprintf("Profile : %s\n", profile))
 
+	// If Scan() marked the result as incomplete or "all ports filtered", include it in TXT export.
 	if strings.TrimSpace(r.Warning) != "" {
-		sb.WriteString(fmt.Sprintf("Warning : %s\n", r.Warning))
+		// Preserve multi-line warnings (e.g., nmap-like 2-line message)
+		for _, line := range strings.Split(r.Warning, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			sb.WriteString(fmt.Sprintf("Warning : %s\n", line))
+		}
 	}
-	sb.WriteString("\n")
 
+	sb.WriteString("\n")
 	sb.WriteString(renderPortFindingsTXT(r.Findings))
 	sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", elapsedSeconds))
 	return sb.String()
@@ -598,7 +606,24 @@ func portSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time
 func portFileTXT(items any, profile string, totalElapsedSeconds float64, t time.Time) string {
 	typed := []portFileItemForTXT{}
 
+	// Support both legacy items (no Warning field) and the newer shape (with Warning).
 	switch v := items.(type) {
+
+	case []struct {
+		Target         string
+		Findings       []port.PortFinding
+		ElapsedSeconds float64
+		Warning        string
+	}:
+		for _, it := range v {
+			typed = append(typed, portFileItemForTXT{
+				Target:         it.Target,
+				Findings:       it.Findings,
+				ElapsedSeconds: it.ElapsedSeconds,
+				Warning:        it.Warning,
+			})
+		}
+
 	case []struct {
 		Target         string
 		Findings       []port.PortFinding
@@ -609,33 +634,35 @@ func portFileTXT(items any, profile string, totalElapsedSeconds float64, t time.
 				Target:         it.Target,
 				Findings:       it.Findings,
 				ElapsedSeconds: it.ElapsedSeconds,
-				Warning:        it.Warning,
+				Warning:        "",
 			})
 		}
-	default:
 
+	default:
+		// unknown shape: keep empty
 	}
 
 	var sb strings.Builder
 	sb.WriteString("=== recon port ===\n")
 	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
 	sb.WriteString("Mode    : file\n")
-	sb.WriteString(fmt.Sprintf("Profile : %s\n", profile))
-
-	if strings.TrimSpace(r.Warning) != "" {
-		sb.WriteString(fmt.Sprintf("Warning : %s\n", r.Warning))
-	}
-	sb.WriteString("\n")
+	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
 
 	for _, it := range typed {
 		sb.WriteString("========================================\n")
 		sb.WriteString(fmt.Sprintf("Target: %s\n", it.Target))
 
 		if strings.TrimSpace(it.Warning) != "" {
-			sb.WriteString(fmt.Sprintf("Warning: %s\n", it.Warning))
+			for _, line := range strings.Split(it.Warning, "\n") {
+				line = strings.TrimSpace(line)
+				if line == "" {
+					continue
+				}
+				sb.WriteString(fmt.Sprintf("Warning: %s\n", line))
+			}
 		}
 		sb.WriteString("\n")
-		
+
 		sb.WriteString(renderPortFindingsTXT(it.Findings))
 		sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", it.ElapsedSeconds))
 	}
