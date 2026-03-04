@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/nartodono/recon/internal/system"
@@ -29,6 +30,11 @@ type Result struct {
 	Target   string
 	Findings []PortFinding
 	Warning string
+
+	HostUp      bool
+	LatencySec  float64
+	NotShown    string
+	ServiceInfo string
 }
 
 func runCmd(name string, args ...string) (stdout string, stderr string, err error) {
@@ -82,18 +88,44 @@ func Scan(target string, extraArgs []string) (Result, error) {
 
 	h := run.Hosts[0]
 
-	filteredCount := 0
-	filteredReason := ""
+	hostUp := strings.EqualFold(strings.TrimSpace(h.Status.State), "up")
+	latencySec := 0.0
+	if s := strings.TrimSpace(h.Times.SRTT); s != "" {
+		if us, e := strconv.ParseFloat(s, 64); e == nil {
+			latencySec = us / 1_000_000.0
+		}
+	}
+
+	closedCount, filteredCount := 0, 0
+	closedReason, filteredReason := "", ""
 	for _, ep := range h.Ports.ExtraPorts {
-		if strings.EqualFold(strings.TrimSpace(ep.State), "filtered") {
+		st := strings.ToLower(strings.TrimSpace(ep.State))
+		reason := strings.TrimSpace(ep.Reason)
+		if reason == "" && len(ep.ExtraReasons) > 0 {
+			reason = strings.TrimSpace(ep.ExtraReasons[0].Reason)
+		}
+		if st == "closed" {
+			closedCount += ep.Count
+			if closedReason == "" && reason != "" {
+				closedReason = reason
+			}
+		} else if st == "filtered" {
 			filteredCount += ep.Count
-			if filteredReason == "" {
-				filteredReason = strings.TrimSpace(ep.Reason)
+			if filteredReason == "" && reason != "" {
+				filteredReason = reason
 			}
 		}
 	}
 
-	hostUp := strings.EqualFold(strings.TrimSpace(h.Status.State), "up")
+	notShown := ""
+	if closedCount > 0 {
+		reason := closedReason
+		if reason == "" {
+			reason = "reset"
+		}
+		notShown = fmt.Sprintf("Not shown: %d closed tcp ports (%s)", closedCount, reason)
+	}
+
 	if hostUp && filteredCount > 0 && len(h.Ports.Port) == 0 {
 		reason := filteredReason
 		if reason == "" {
@@ -106,10 +138,20 @@ func Scan(target string, extraArgs []string) (Result, error) {
 			filteredCount,
 			reason,
 		)
+		notShown = ""
 	}
+
+	cpeSet := map[string]struct{}{}
 
 	findings := make([]PortFinding, 0, len(h.Ports.Port))
 	for _, p := range h.Ports.Port {
+		for _, c := range p.Service.CPEs {
+			c = strings.TrimSpace(c)
+			if c != "" {
+				cpeSet[c] = struct{}{}
+			}
+		}
+
 		svc := p.Service.Name
 		if p.Service.Tunnel != "" && p.Service.Name != "" {
 			svc = p.Service.Tunnel + "/" + p.Service.Name
@@ -146,5 +188,40 @@ func Scan(target string, extraArgs []string) (Result, error) {
 		return findings[i].Port < findings[j].Port
 	})
 
-	return Result{Target: target, Findings: findings, Warning: warning}, nil
+	serviceInfo := ""
+	if len(cpeSet) > 0 {
+		cpes := make([]string, 0, len(cpeSet))
+		for c := range cpeSet {
+			cpes = append(cpes, c)
+		}
+		sort.Strings(cpes)
+
+		osName := ""
+		for _, c := range cpes {
+			if strings.HasPrefix(c, "cpe:/o:linux") {
+				osName = "Linux"
+				break
+			}
+			if strings.HasPrefix(c, "cpe:/o:microsoft") {
+				osName = "Windows"
+				break
+			}
+		}
+
+		if osName != "" {
+			serviceInfo = fmt.Sprintf("Service Info: OS: %s; CPE: %s", osName, strings.Join(cpes, ", "))
+		} else {
+			serviceInfo = fmt.Sprintf("Service Info: CPE: %s", strings.Join(cpes, ", "))
+		}
+	}
+
+	return Result{
+		Target:      target,
+		Findings:    findings,
+		Warning:     warning,
+		HostUp:      hostUp,
+		LatencySec:  latencySec,
+		NotShown:    notShown,
+		ServiceInfo: serviceInfo,
+	}, nil
 }
