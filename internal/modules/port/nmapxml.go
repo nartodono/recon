@@ -5,6 +5,15 @@ import "encoding/xml"
 type NmapRun struct {
 	XMLName xml.Name `xml:"nmaprun"`
 	Hosts   []Host   `xml:"host"`
+	RunStats RunStats `xml:"runstats"`
+}
+
+type RunStats struct {
+    Finished Finished `xml:"finished"`
+}
+
+type Finished struct {
+    Exit string `xml:"exit,attr"`
 }
 
 type Host struct {
@@ -14,23 +23,30 @@ type Host struct {
 
 type Address struct {
 	Addr     string `xml:"addr,attr"`
-	AddrType string `xml:"addrtype,attr"` // ipv4, ipv6, mac
+	AddrType string `xml:"addrtype,attr"`
 }
 
 type Ports struct {
-	Port []Port `xml:"port"`
+	Port       []Port      `xml:"port"`
+	ExtraPorts []ExtraPort `xml:"extraports"`
 }
 
 type Port struct {
-	Protocol string `xml:"protocol,attr"` // tcp/udp
+	Protocol string `xml:"protocol,attr"`
 	PortID   int    `xml:"portid,attr"`
 	State    State  `xml:"state"`
 	Service  Service `xml:"service"`
 	Scripts  []Script `xml:"script"`
 }
 
+type ExtraPort struct {
+	State  string `xml:"state,attr"`
+	Count  int    `xml:"count,attr"`
+	Reason string `xml:"reason,attr"`
+}
+
 type State struct {
-	State string `xml:"state,attr"` // open/closed/filtered
+	State string `xml:"state,attr"`
 	Reason string `xml:"reason,attr,omitempty"`
 }
 
@@ -39,7 +55,7 @@ type Service struct {
 	Product string `xml:"product,attr,omitempty"`
 	Version string `xml:"version,attr,omitempty"`
 	Extra   string `xml:"extrainfo,attr,omitempty"`
-	Tunnel  string `xml:"tunnel,attr,omitempty"` // e.g., ssl
+	Tunnel  string `xml:"tunnel,attr,omitempty"`
 }
 
 type Script struct {
