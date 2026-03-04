@@ -8,6 +8,17 @@ import (
 )
 
 func RenderPortResult(r port.Result) {
+	if r.HostUp {
+		if r.LatencySec > 0 {
+			fmt.Printf("Host is up (%.1fs latency).\n", r.LatencySec)
+		} else {
+			fmt.Println("Host is up.")
+		}
+	}
+	if strings.TrimSpace(r.NotShown) != "" {
+		fmt.Println(r.NotShown)
+	}
+
 	if strings.TrimSpace(r.Warning) != "" {
 		for _, line := range strings.Split(r.Warning, "\n") {
 			line = strings.TrimRight(line, " \t")
@@ -22,12 +33,12 @@ func RenderPortResult(r port.Result) {
 	if len(r.Findings) == 0 {
 		if strings.TrimSpace(r.Warning) == "" {
 			fmt.Println(Yellow("[!] No ports found (or host did not respond)."))
+			fmt.Println()
 		}
 		return
 	}
 
 	for _, f := range r.Findings {
-
 		prefix := Yellow("[?]")
 		if f.State == "OPEN" {
 			prefix = Green("[+]")
@@ -64,5 +75,9 @@ func RenderPortResult(r port.Result) {
 		} else {
 			fmt.Println()
 		}
+	}
+
+	if strings.TrimSpace(r.ServiceInfo) != "" {
+		fmt.Println(r.ServiceInfo)
 	}
 }
