@@ -3,13 +3,26 @@ package ui
 import (
 	"fmt"
 	"strings"
+
 	"github.com/nartodono/recon/internal/modules/port"
 )
 
 func RenderPortResult(r port.Result) {
-	if len(r.Findings) == 0 {
-		fmt.Println(Yellow("[!] No ports found (or host did not respond)."))
+	if strings.TrimSpace(r.Warning) != "" {
+		for _, line := range strings.Split(r.Warning, "\n") {
+			line = strings.TrimRight(line, " \t")
+			if line == "" {
+				continue
+			}
+			fmt.Println(Yellow(line))
+		}
 		fmt.Println()
+	}
+
+	if len(r.Findings) == 0 {
+		if strings.TrimSpace(r.Warning) == "" {
+			fmt.Println(Yellow("[!] No ports found (or host did not respond)."))
+		}
 		return
 	}
 
@@ -28,9 +41,9 @@ func RenderPortResult(r port.Result) {
 		fmt.Printf("    Status  : %s\n", f.State)
 
 		if strings.TrimSpace(f.Version) != "" {
-		    fmt.Printf("    Version : %s\n", f.Version)
+			fmt.Printf("    Version : %s\n", f.Version)
 		} else {
-		    fmt.Printf("    Version : UNKNOWN\n")
+			fmt.Printf("    Version : UNKNOWN\n")
 		}
 
 		if len(f.Scripts) > 0 {
