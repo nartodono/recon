@@ -8,15 +8,23 @@ import (
 )
 
 func RenderPortResult(r port.Result) {
+	fmt.Printf("Target: %s\n", r.Target)
+
+	printedMeta := false
 	if r.HostUp {
 		if r.LatencySec > 0 {
 			fmt.Printf("Host is up (%.1fs latency).\n", r.LatencySec)
 		} else {
 			fmt.Println("Host is up.")
 		}
+		printedMeta = true
 	}
 	if strings.TrimSpace(r.NotShown) != "" {
 		fmt.Println(r.NotShown)
+		printedMeta = true
+	}
+	if printedMeta {
+		fmt.Println()
 	}
 
 	if strings.TrimSpace(r.Warning) != "" {
@@ -78,6 +86,49 @@ func RenderPortResult(r port.Result) {
 	}
 
 	if strings.TrimSpace(r.ServiceInfo) != "" {
-		fmt.Println(r.ServiceInfo)
+		s := strings.TrimSpace(r.ServiceInfo)
+
+		if strings.HasPrefix(s, "Service Info:") {
+			body := strings.TrimSpace(strings.TrimPrefix(s, "Service Info:"))
+			parts := strings.Split(body, ";")
+
+			osLine := ""
+			cpeLine := ""
+			for _, p := range parts {
+				p = strings.TrimSpace(p)
+				if strings.HasPrefix(p, "OS:") {
+					osLine = strings.TrimSpace(p)
+				} else if strings.HasPrefix(p, "CPE:") {
+					cpeLine = strings.TrimSpace(p)
+				}
+			}
+
+			if osLine != "" {
+				fmt.Printf("Service Info: %s\n", osLine)
+			} else {
+				fmt.Println(s)
+			}
+
+			if cpeLine != "" {
+				cpeBody := strings.TrimSpace(strings.TrimPrefix(cpeLine, "CPE:"))
+				cpes := strings.Split(cpeBody, ",")
+				clean := make([]string, 0, len(cpes))
+				for _, c := range cpes {
+					c = strings.TrimSpace(c)
+					if c != "" {
+						clean = append(clean, c)
+					}
+				}
+				if len(clean) > 0 {
+					fmt.Println("CPE:")
+					for _, c := range clean {
+						fmt.Println("  - " + c)
+					}
+				}
+			}
+		} else {
+			fmt.Println(s)
+		}
+		fmt.Println()
 	}
 }
