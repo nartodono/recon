@@ -60,7 +60,78 @@ func PortSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time
 	sb.WriteString("=== recon port ===\n")
 	sb.WriteString(fmt.Sprintf("Time    : %s\n", t.Format(time.RFC3339)))
 	sb.WriteString(fmt.Sprintf("Target  : %s\n", r.Target))
-	sb.WriteString(fmt.Sprintf("Profile : %s\n\n", profile))
+	sb.WriteString(fmt.Sprintf("Profile : %s\n", profile))
+
+	// --- Nmap-like meta header ---
+	if r.HostUp {
+		if r.LatencySec > 0 {
+			sb.WriteString(fmt.Sprintf("Host    : up (%.1fs latency)\n", r.LatencySec))
+		} else {
+			sb.WriteString("Host    : up\n")
+		}
+	}
+
+	if strings.TrimSpace(r.NotShown) != "" {
+		sb.WriteString(r.NotShown + "\n")
+	}
+
+	// Warning may contain multiple lines (e.g., Nmap "ignored states")
+	if strings.TrimSpace(r.Warning) != "" {
+		for _, line := range strings.Split(r.Warning, "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+			sb.WriteString(line + "\n")
+		}
+	}
+
+	// Pretty Service Info (best-effort)
+	if strings.TrimSpace(r.ServiceInfo) != "" {
+		s := strings.TrimSpace(r.ServiceInfo)
+		if strings.HasPrefix(s, "Service Info:") {
+			body := strings.TrimSpace(strings.TrimPrefix(s, "Service Info:"))
+			parts := strings.Split(body, ";")
+			osLine := ""
+			cpeLine := ""
+			for _, p := range parts {
+				p = strings.TrimSpace(p)
+				if strings.HasPrefix(p, "OS:") {
+					osLine = strings.TrimSpace(p)
+				} else if strings.HasPrefix(p, "CPE:") {
+					cpeLine = strings.TrimSpace(p)
+				}
+			}
+
+			if osLine != "" {
+				sb.WriteString("Service Info: " + osLine + "\n")
+			} else {
+				// fallback
+				sb.WriteString(s + "\n")
+			}
+
+			if cpeLine != "" {
+				cpes := strings.Split(strings.TrimSpace(strings.TrimPrefix(cpeLine, "CPE:")), ",")
+				out := make([]string, 0, len(cpes))
+				for _, c := range cpes {
+					c = strings.TrimSpace(c)
+					if c != "" {
+						out = append(out, c)
+					}
+				}
+				if len(out) > 0 {
+					sb.WriteString("CPE:\n")
+					for _, c := range out {
+						sb.WriteString("  - " + c + "\n")
+					}
+				}
+			}
+		} else {
+			sb.WriteString(s + "\n")
+		}
+	}
+
+	sb.WriteString("\n")
 
 	sb.WriteString(renderPortFindingsTXT(r.Findings))
 	sb.WriteString(fmt.Sprintf("\nTime  : %.2fs\n\n", elapsedSeconds))
@@ -68,9 +139,16 @@ func PortSingleTXT(r port.Result, profile string, elapsedSeconds float64, t time
 }
 
 type PortFileItem struct {
-	Target         string           `json:"target"`
+	Target         string             `json:"target"`
 	Findings       []port.PortFinding `json:"findings"`
-	ElapsedSeconds float64          `json:"elapsed_seconds"`
+	ElapsedSeconds float64            `json:"elapsed_seconds"`
+
+	// Optional meta (if populated by caller)
+	Warning     string  `json:"warning,omitempty"`
+	HostUp      bool    `json:"host_up,omitempty"`
+	LatencySec  float64 `json:"latency_sec,omitempty"`
+	NotShown    string  `json:"not_shown,omitempty"`
+	ServiceInfo string  `json:"service_info,omitempty"`
 }
 
 func PortFileTXT(items []PortFileItem, profile string, totalElapsedSeconds float64, t time.Time) string {
