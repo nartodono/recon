@@ -3,9 +3,9 @@ package port
 import "encoding/xml"
 
 type NmapRun struct {
-	XMLName   xml.Name `xml:"nmaprun"`
-	Hosts     []Host   `xml:"host"`
-	RunStats  RunStats `xml:"runstats"`
+	XMLName  xml.Name `xml:"nmaprun"`
+	Hosts    []Host   `xml:"host"`
+	RunStats RunStats `xml:"runstats"`
 }
 
 type RunStats struct {
@@ -18,6 +18,7 @@ type Finished struct {
 
 type Host struct {
 	Status    HostStatus `xml:"status"`
+	Times     HostTimes  `xml:"times"`
 	Addresses []Address  `xml:"address"`
 	Ports     Ports      `xml:"ports"`
 }
@@ -25,6 +26,11 @@ type Host struct {
 type HostStatus struct {
 	State  string `xml:"state,attr"`
 	Reason string `xml:"reason,attr,omitempty"`
+}
+
+
+type HostTimes struct {
+	SRTT string `xml:"srtt,attr"`
 }
 
 type Address struct {
@@ -37,10 +43,17 @@ type Ports struct {
 	ExtraPorts []ExtraPort `xml:"extraports"`
 }
 
+
 type ExtraPort struct {
-	State  string `xml:"state,attr"`
+	State        string         `xml:"state,attr"`
+	Count        int            `xml:"count,attr"`
+	Reason       string         `xml:"reason,attr,omitempty"`
+	ExtraReasons []ExtraReason  `xml:"extrareasons"`
+}
+
+type ExtraReason struct {
+	Reason string `xml:"reason,attr"`
 	Count  int    `xml:"count,attr"`
-	Reason string `xml:"reason,attr,omitempty"`
 }
 
 type Port struct {
@@ -57,11 +70,12 @@ type State struct {
 }
 
 type Service struct {
-	Name    string `xml:"name,attr,omitempty"`
-	Product string `xml:"product,attr,omitempty"`
-	Version string `xml:"version,attr,omitempty"`
-	Extra   string `xml:"extrainfo,attr,omitempty"`
-	Tunnel  string `xml:"tunnel,attr,omitempty"`
+	Name    string   `xml:"name,attr,omitempty"`
+	Product string   `xml:"product,attr,omitempty"`
+	Version string   `xml:"version,attr,omitempty"`
+	Extra   string   `xml:"extrainfo,attr,omitempty"`
+	Tunnel  string   `xml:"tunnel,attr,omitempty"`
+	CPEs    []string `xml:"cpe"`
 }
 
 type Script struct {
