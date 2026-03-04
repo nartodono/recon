@@ -28,6 +28,7 @@ type ScriptFinding struct {
 type Result struct {
 	Target   string
 	Findings []PortFinding
+	Warning string
 }
 
 func runCmd(name string, args ...string) (stdout string, stderr string, err error) {
@@ -66,11 +67,46 @@ func Scan(target string, extraArgs []string) (Result, error) {
 		return Result{}, fmt.Errorf("failed to parse nmap XML: %w\n%s", e, stderr)
 	}
 
+	warning := ""
+	exit := strings.ToLower(strings.TrimSpace(run.RunStats.Finished.Exit))
+	if err != nil || (exit != "" && exit != "success") {
+		if exit == "" {
+			exit = "unknown"
+		}
+		warning = fmt.Sprintf("Scan may be incomplete (nmap exit=%s). Output may be partial.", exit)
+	}
+
 	if len(run.Hosts) == 0 {
-		return Result{Target: target, Findings: nil}, nil
+		return Result{Target: target, Findings: nil, Warning: warning}, nil
 	}
 
 	h := run.Hosts[0]
+
+	filteredCount := 0
+	filteredReason := ""
+	for _, ep := range h.Ports.ExtraPorts {
+		if strings.EqualFold(strings.TrimSpace(ep.State), "filtered") {
+			filteredCount += ep.Count
+			if filteredReason == "" {
+				filteredReason = strings.TrimSpace(ep.Reason)
+			}
+		}
+	}
+
+	hostUp := strings.EqualFold(strings.TrimSpace(h.Status.State), "up")
+	if hostUp && filteredCount > 0 && len(h.Ports.Port) == 0 {
+		reason := filteredReason
+		if reason == "" {
+			reason = "no-response"
+		}
+		warning = fmt.Sprintf(
+			"All %d scanned ports on %s are in ignored states.\nNot shown: %d filtered tcp ports (%s)",
+			filteredCount,
+			target,
+			filteredCount,
+			reason,
+		)
+	}
 
 	findings := make([]PortFinding, 0, len(h.Ports.Port))
 	for _, p := range h.Ports.Port {
@@ -110,5 +146,5 @@ func Scan(target string, extraArgs []string) (Result, error) {
 		return findings[i].Port < findings[j].Port
 	})
 
-	return Result{Target: target, Findings: findings}, nil
+	return Result{Target: target, Findings: findings, Warning: warning}, nil
 }
